@@ -1,0 +1,44 @@
+
+\documentclass[buriama8_dp.tex]{subfiles}
+\begin{document}
+\chapter{Coverage path planning}
+\label{chap:cpp}
+
+Coverage Path Planning (\textit{CPP}) is ``the task of determining a path that passes over all points of an area or volume of interest while avoiding obstacles'' \cite{survey13}. The task comes naturally with different robotic applications, where the robot is to complete some task in every point in the environent.
+
+\section{Applications}
+The first such task that comes to mind is of course cleaning. This sometimes tedious task has been in focus of the robotics community for quite some time, with articles concerning this topic dating back to 1988 \cite{cleaning88}. Other applications studied include painting, de-mining, automated agricultural vehicles and so on.
+
+\section{Approach families}
+
+Several different approaches to the problem apperaded over time. A typical application takes place in a 2-dimensional, previously known environment.
+
+%TODO workspace, obstacle
+
+\subsection{Random strategies}
+\label{subsec:random_cpp}
+The simplest coverage strategy is a random strategy. The environment is traversed randomly, and, hopefully, most of the environment will have been covered at some point in the future. Random strategies are commonly used in vacuum cleaning robots because they do not require any expensive special hardware and are easy to implement. As the robots are autonomous and work when their owner is not at home, optimal performance is not crucial.
+
+Vacuum cleaners following random strategies have been shown to perform relatively well in terms of converging to fully cleaned room \cite{randomcover}.
+
+In our case, time is a scarce resource and we need to cover the whole area in least time possible. The great advantage of random planning is the fact that it does not need any prior information about the environment, which is the characteristic we are looking for in iur method of choice.
+
+\subsection{Exact cellular decomposition}
+\label{subsec:label}
+When the environment is represented, or at least approximated, by polygons, exact cellular decomposition approaches can be used. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}.
+
+%TODO fig: boustrophedon pattern
+
+
+\section{Optimal solution in a known 2D environment}
+
+\section{Generalization to 3D}
+
+\section{Dynamic environments}
+
+\section{Heuristic approach}
+
+\section{Method comparison}
+
+\end{document}
+

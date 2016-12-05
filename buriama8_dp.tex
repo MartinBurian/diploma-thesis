@@ -1,0 +1,191 @@
+% arara: pdflatex: { synctex: yes }
+% arara: makeindex: { style: ctuthesis }
+% arara: bibtex
+
+% The class takes all the key=value arguments that \ctusetup does,
+% and a couple more: draft and oneside
+\documentclass[twoside]{ctuthesis}
+
+\usepackage{subfiles}
+
+\ctusetup{
+	preprint = \ctuverlog,
+	mainlanguage = english,
+	otherlanguages = {czech},
+	title-czech = {Taktilní průzkum terénu robotickou rukou},
+	title-english = {Haptic terrain exploration with robotic arm},
+	subtitle-czech = {},
+	subtitle-english = {},
+	doctype = M,
+	faculty = F3,
+	department-czech = {Katedra kybernetiky},
+	department-english = {Department of Cybernetics},
+	author = {Martin Burian},
+	supervisor = {doc. Tomáš Svoboda, Ph.D.},
+	supervisor-address = {},
+	supervisor-specialist = {},
+	fieldofstudy-english = {Open informatics},
+	subfieldofstudy-english = {Computer vision and digital image},
+	fieldofstudy-czech = {Otevřená informatika},
+	subfieldofstudy-czech = {Počítačové vidění a digitální obraz},
+	keywords-czech = {slovo, klíč},
+	keywords-english = {word, key},
+	day = 10,
+	month = 2,
+	year = 2017,
+	specification-file = {ctutest-zadani.pdf},
+%	front-specification = true,
+%	front-list-of-figures = false,
+%	front-list-of-tables = false,
+%	monochrome = true,
+%	layout-short = true,
+}
+
+\ctuprocess
+
+\addto\ctucaptionsczech{%
+	\def\supervisorname{Vedoucí}%
+	\def\subfieldofstudyname{Studijní program}%
+}
+
+\ctutemplateset{maketitle twocolumn default}{
+	\begin{twocolumnfrontmatterpage}
+		\ctutemplate{twocolumn.thanks}
+		\ctutemplate{twocolumn.declaration}
+		\ctutemplate{twocolumn.abstract.in.titlelanguage}
+		\ctutemplate{twocolumn.abstract.in.secondlanguage}
+		\ctutemplate{twocolumn.tableofcontents}
+		\ctutemplate{twocolumn.listoffigures}
+	\end{twocolumnfrontmatterpage}
+}
+
+% Theorem declarations, this is the reasonable default, anybody can do what they wish.
+% If you prefer theorems in italics rather than slanted, use \theoremstyle{plainit}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\theoremstyle{note}
+\newtheorem*{remark*}{Remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\setlength{\parskip}{5ex plus 0.2ex minus 0.2ex}
+
+
+
+% Abstract in Czech
+\begin{abstract-czech}
+Tys honí až nevrlí komise omylem kontor město sbírku a koutě, pán nu lež, slzy, nemají zasvé šťasten. Tetě veselá. Vem lépe ty jí cíp vrhá. Novinám prachy kabát. Býti čaj via pakujte přeli, dyť do chuť kroutí kolínský bába odkrouhnul. Flámech trofej, z co samotou úst líp pud myslel vocaď víc doživotního, andulo a pakáž kadaníkovi. Čímž protiva v žába vězí duní.
+
+Jé ní ticho vzoru. Lepší zburcují učil nepořádku zboží ní mučedník obdivem! Bas nemožné postele bys cítíte ať února. Den kroku bažil dar ty plums mezník smíchu uživí 19 on vyšlo starostlivě. Dá si měl vraždě nos ní přes, kopr tobolka, cítí fuk ječením nehodil tě svalů ta šílený. Uf teď jaké 19 divným.
+\end{abstract-czech}
+
+
+
+% Abstract in English
+\begin{abstract-english}
+ Let us suppose we are given a modulus $d$.  In , the main result was the extension of Newton random variables.  We show that ${\Gamma_{\mathfrak{{r}},b}} ( {Z_{\beta,f}} ) \sim \bar{E}$.  The work in  did not consider the infinite, hyper-reversible, local case. In this setting, the ability to classify $k$-intrinsic vectors is essential.
+ 
+Let us suppose $\mathfrak{{a}} > \mathfrak{{c}}''$.  Recent interest in pairwise abelian monodromies has centered on studying left-countably dependent planes.  We show that $\Delta \ge 0$.  It was Brouwer who first asked whether classes can be described. B.  improved upon the results of M. Bernoulli by deriving nonnegative classes.
+\end{abstract-english}
+
+
+
+% Acknowledgements / Podekovani
+\begin{thanks}
+Děkuji ČVUT, že mi je tak dobrou \emph{alma mater}.
+\end{thanks}
+
+
+
+% Declaration / Prohlaseni
+\begin{declaration}
+Prohlašuji, že jsem předloženou práci vypracoval samostatně, a že jsem uvedl veškerou použitou literaturu.
+
+V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
+\end{declaration}
+
+% Only for testing purposes
+\listfiles
+\usepackage[pagewise]{lineno}
+\usepackage{lipsum,blindtext}
+\usepackage{mathrsfs} % provides \mathscr used in the ridiculous examples
+
+\begin{document}
+
+\maketitle
+
+\chapter{Introduction}
+\label{chap:intro}
+
+\section{Outline of the thesis}
+\label{sec:outline}
+
+First, we will present the hardware used in the exploration task, the Kinova JACO robotic arm anf the ptoforce 3D force sensor with our custom extension.
+
+Next, we present the overview of state-of-the-art methods of coverage path planning, and the rationale behind our method choice.
+
+Later, we describe the implementation of the algorithm in ROS and expeirments with the exploration methods, both simulated and on a real robotic arm.
+
+
+\chapter{Robotic arm}
+
+\section{Kinova JACO\(^2\)}
+
+\section{ROS interface}
+
+\section{Tactile sensing}
+
+\section{Exploration}
+
+The robotic arm is to build a map of the environment, or, more precisely, its workspace. The sensing instrument needs to be passed over all points in the environent to identify if they are occupied or free.
+
+
+\subfile{chap03_cpp}
+
+
+\chapter{Implementation}
+
+
+
+\chapter{Experiments on real robot}
+
+
+
+\chapter{Conclusion}
+
+% \begin{table}
+% \begin{ctucolortab}
+% j\begin{tabular}{cc}
+% \bfseries Foo & \bfseries Bar \\\Midrule
+% foo1 & bar1 \\
+% foo2 & bar2
+% \end{tabular}
+% \end{ctucolortab}
+% \caption{Foobar.}
+% \label{tab:foobar}
+% \end{table}
+
+\appendix
+
+\printindex
+
+\appendix
+
+\bibliographystyle{unsrt}
+\bibliography{buriama8_dp}
+
+%\ctutemplate{specification.as.chapter}
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

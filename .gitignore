@@ -1,0 +1,14 @@
+*.aux
+*.log
+*.blg
+*.bbl
+*.idx
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.pdf
+_region_.*
+
+!/figures/*.pdf
