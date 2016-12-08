@@ -6,7 +6,6 @@
 % and a couple more: draft and oneside
 \documentclass[twoside]{ctuthesis}
 
-\usepackage{subfiles}
 
 \ctusetup{
 	preprint = \ctuverlog,
@@ -118,6 +117,25 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \usepackage{lipsum,blindtext}
 \usepackage{mathrsfs} % provides \mathscr used in the ridiculous examples
 
+%\usepackage{graphicx}
+\graphicspath{{./}{./figures/}}
+\usepackage{subfiles}
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup[subfigure]{labelformat=simple,labelsep=period}
+
+\providecommand*{\diff}{\textrm{d}}
+\newcommand*{\m}[1]{\(#1\)}
+\newcommand*{\unit}[1]{\; \textrm{[#1]}}
+\newcommand*{\degr}{^\circ}
+\newcommand*{\uvz}[1]{``#1''}
+\newcommand*{\quot}[2]{\textit{\uvz{#1}}\cite{#2}}
+\newcommand*{\ve}[1]{\mathbf{#1}}
+\newcommand*{\half}{^1\!/_{\!2}}
+\newcommand*{\difrac}[2]{^{#1\!}/_{\!#2}}
+
+\setlength{\parskip}{2ex plus 0.2ex minus 0.1ex}
+
 \begin{document}
 
 \maketitle
@@ -128,34 +146,27 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \section{Outline of the thesis}
 \label{sec:outline}
 
-First, we will present the hardware used in the exploration task, the Kinova JACO robotic arm anf the ptoforce 3D force sensor with our custom extension.
+First, we will present the hardware used in the exploration task, the Kinova JACO robotic arm and the Optoforce 3D force sensor with our custom extension.
 
 Next, we present the overview of state-of-the-art methods of coverage path planning, and the rationale behind our method choice.
 
-Later, we describe the implementation of the algorithm in ROS and expeirments with the exploration methods, both simulated and on a real robotic arm.
+Later, we describe the implementation of the algorithm in ROS and experiments with the exploration methods, both simulated and on a real robotic arm.
 
 
-\chapter{Robotic arm}
-
-\section{Kinova JACO\(^2\)}
-
-\section{ROS interface}
-
-\section{Tactile sensing}
-
-\section{Exploration}
-
-The robotic arm is to build a map of the environment, or, more precisely, its workspace. The sensing instrument needs to be passed over all points in the environent to identify if they are occupied or free.
+\subfile{chap02_robot}
 
 
 \subfile{chap03_cpp}
+
+
+\subfile{chap04_expl}
 
 
 \chapter{Implementation}
 
 
 
-\chapter{Experiments on real robot}
+\chapter{Experiments}
 
 
 
@@ -172,10 +183,6 @@ The robotic arm is to build a map of the environment, or, more precisely, its wo
 % \caption{Foobar.}
 % \label{tab:foobar}
 % \end{table}
-
-\appendix
-
-\printindex
 
 \appendix
 

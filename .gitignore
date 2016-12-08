@@ -10,5 +10,3 @@
 *.toc
 *.pdf
 _region_.*
-
-!/figures/*.pdf

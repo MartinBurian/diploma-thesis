@@ -4,41 +4,110 @@
 \chapter{Coverage path planning}
 \label{chap:cpp}
 
-Coverage Path Planning (\textit{CPP}) is ``the task of determining a path that passes over all points of an area or volume of interest while avoiding obstacles'' \cite{survey13}. The task comes naturally with different robotic applications, where the robot is to complete some task in every point in the environent.
+Coverage Path Planning (\textit{CPP}) is \quot{the task of determining a path that passes over all points of an area or volume of interest while avoiding obstacles}{survey13}. The task comes naturally with different robotic applications, where the robot is to complete some task in every point in the environment.
+
+The problem has been studied both practically and theoretically. In literature, the problem of planning an optimal covering route is referred to as the \uvz{lawnmower problem} or the \uvz{milling problem} and has been shown to be NP-hard \cite{lawnmowing}. The methods below either don't give any optimality guarantees, or hide the complexity elsewhere, as solving an integer LP.
 
 \section{Applications}
-The first such task that comes to mind is of course cleaning. This sometimes tedious task has been in focus of the robotics community for quite some time, with articles concerning this topic dating back to 1988 \cite{cleaning88}. Other applications studied include painting, de-mining, automated agricultural vehicles and so on.
+The first such task that comes to mind is of course cleaning. This sometimes tedious task has been in focus of the robotics community for quite some time, with articles concerning this topic dating back to 1988 \cite{cleaning88}. Other applications studied include painting, de-mining, automated agricultural vehicles and so on \cite[sec.~1]{survey13}.
+
 
 \section{Approach families}
 
-Several different approaches to the problem apperaded over time. A typical application takes place in a 2-dimensional, previously known environment.
+Several different approaches to the problem appeared over time. A typical application takes place in a 2-dimensional, previously known environment. We will introduce several inspiring methods of 2D coverage, and then present a scheme to generalize them to 3D.
 
-%TODO workspace, obstacle
+%TODO define workspace, obstacle
 
 \subsection{Random strategies}
 \label{subsec:random_cpp}
-The simplest coverage strategy is a random strategy. The environment is traversed randomly, and, hopefully, most of the environment will have been covered at some point in the future. Random strategies are commonly used in vacuum cleaning robots because they do not require any expensive special hardware and are easy to implement. As the robots are autonomous and work when their owner is not at home, optimal performance is not crucial.
+The simplest coverage strategy is a random strategy. The environment is traversed completely randomly, and, hopefully, most of the environment will have been covered at some point in the future. Random strategies are commonly used in vacuum cleaning robots because they do not require any expensive special hardware and are easy to implement. As the robots are autonomous and work when their owner is not at home, optimal performance is not crucial.
 
-Vacuum cleaners following random strategies have been shown to perform relatively well in terms of converging to fully cleaned room \cite{randomcover}.
+Vacuum cleaners following random strategies have been shown to perform relatively well in terms of converging to fully cleaned room in reasonable time~\cite{randomcover}.
 
-In our case, time is a scarce resource and we need to cover the whole area in least time possible. The great advantage of random planning is the fact that it does not need any prior information about the environment, which is the characteristic we are looking for in iur method of choice.
+In our case, time is a scarce resource and we need to cover the whole area in least time possible. The great advantage of random planning is the fact that it does not need any prior information about the environment, which is the characteristic we are looking for in our method of choice.
+
+\subsection{Heuristic methods}
+\label{subsec:heuritic}
+Next in line with simplicity are heuristic strategies. \cite{rt_heuristic_coverage} describes several such strategies. All of them are used in grid map representation.
+
+The simplest strategy is closest-first, which randomly chooses an uncovered field adjacent to the current one; if none such exists, a BFS is performed to find the closest uncovered field and navigates to it.
+
+Another heuristic method used is a modification of the WaveFront method \cite{wavefront} to unknown environments, called Iterated WaveFront. In the WaveFront method, the environment is traversed along cells equidistant to a goal state selected beforehand. This should ensure that all the far areas will have been covered when we get close to the goal, thus making the coverage somewhat optimal. Iterated WaveFront selects the goal state randomly, computing path in the currently known map. When an obstacle is encountered, the plan is recomputed over the updated map.
+
+Heuristic strategies do not provide any optimality guarantees, and can preform very bad in the worst cases. They are however very easy to implement, and can cope with unknown environments well. 
 
 \subsection{Exact cellular decomposition}
 \label{subsec:label}
-When the environment is represented, or at least approximated, by polygons, exact cellular decomposition approaches can be used. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}.
+When the environment is known and can be represented, or at least approximated, by polygons or differential functions, exact cellular decomposition approaches can be used. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}, an example of which can be seen in Figure~\ref{fig:zig_pattern}. The traversal order is where the complexity is hidden in this technique.
 
-%TODO fig: boustrophedon pattern
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=6cm]{figures/zigzag.pdf}
+  \caption[Boustrophedon pattern]{Example of the boustrophedon or zig-zag pattern. The environment is sequentially covered by the advancing sweeps}
+  \label{fig:zig_pattern}
+\end{figure}
 
+The two commonly used decomposition techniques are trapezoid decomposition and boustrophedon decomposition. Trapezoid decomposition is usually used to index point location in planar decomposition. Here, only the exterior of obstacle polygons is decomposed. Then an adjacency graph of the cells is created and a path through the graph is computed, visiting every cell (vertex) at least once. As the path is followed, each cell is covered bu the zig-zag pattern, and then the robot moves to the next cell.
 
-\section{Optimal solution in a known 2D environment}
+The trapezoidal decomposition typically generates many adjacent cells that could be merged and still traversed trivially, but more efficiently, because less border areas will need to be handled. The boustrophedon decomposition is similar to the trapezoidal, only certain cells are merged together, eliminating suboptimal coverage of their boundaries. Examples of the two decompositions are presented in Figure~\ref{fig:decomps}.
+
+\begin{figure}[ht]
+  \begin{subfigure}[t]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{decomp_trapez.pdf}
+    \caption{}
+    \label{fig:decomp_trapez}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{decomp_boustrop.pdf}
+    \caption{}
+    \label{fig:decomp_boustrop}
+  \end{subfigure}
+
+  \caption[Trapezoid and boustrophedon decompositions]{Example environment decomposed by trapezoid (\subref{fig:decomp_trapez}) and boustrophedon (\subref{fig:decomp_boustrop}) decomposition, with an example of covering path}
+  \label{fig:decomps}
+\end{figure}
+
+This class of methods is best for perfectly known environments, which is not our case.
+
+%TODO CCr?
+
+\subsection{Grid neural network}
+\label{subsec:nncpp}
+When the environment is represented in a grid, a neural network like structure can be used to generate a covering path \cite{neural}. Each cell is represented by a neuron, connected to its 8-neighborhood. The dynamics of the network is described by the short term memory shunting equation for activity \(x_j\) of neuron \m j derived from the physical model of neuron \cite[sec.~III]{neural}
+ 
+\begin{equation}
+  \frac{\diff x_j}{\diff t} = -Ax_i + (B-x_i) \left( [I_i]^+ + \sum_{j \in N_i} w_{ij}[x_j]^+ \right) - (D+x_i)[I]^-
+\label{eqn:shunting}
+\end{equation}
+
+\noindent where \([x]^+=\max\{x,0\}\), \([x]^-=\max\{-x,0\}\); \m A, \m B and \m D are model parameters, \(N_i\) is the set of neighboring neurons to neuron \m i and \(I_i\) is the external input of neuron \m i. According to the authors of the algorithm, the network driven by this model is a stable system proven to be bounded in \([-D,B]\) \cite{grossbergmodel}.
+
+The external input represents the state of exploration of the environment. In unknown fields, it is set to a large constant \m E and thus creates high activity in the area. In known fields, it is set to 0, to allow external activities to propagate. In obstacles, it is set to \(-E\), to locally repulse the robot. From Equation~\ref{eqn:shunting} we can see that positive activity propagates through the network, globally attracting the robot to more active areas, while negative activity is restricted to only the neuron with negative external input.
+
+The robot moves through the network, following the highest activity while taking minimizing number of turns into consideration. As it moves, it marks the visited fields and adjusts the network input. The network is numerically simulated, advancing time at each robot step.
+
+The great advantage of this method is in its ability to represent and cope with dynamic obstacles. When an obstacle appears, the robot can only update the external input of the respective neuron and the map and trajectory will adjust. This allows us to run the algorithm in completely unknown environment. The algorithm does not give any optimality guarantees, and since the method authors' experiments included a ranged sensor, while we only work with contact sensing, the algorithm will be making much less informed decisions in our case.
+
 
 \section{Generalization to 3D}
 
-\section{Dynamic environments}
+The presented exact methods rely on some of the properties of 2-dimensional space, such as that there is only \uvz{above} and \uvz{below} an obstacle, but there is no \uvz{behind}. This makes their direct generalization to 3D impossible. Most effort in 3D coverage has been put into covering 2D surfaces in 3D space, such as car parts (that need to be covered in paint) or more complex terrain on crop fields (that need to be covered by harvesting machines). %TODO cite?
 
-\section{Heuristic approach}
+In our case, the exploration also needs to take into account the kinematic constraints on the arm pose, as we must not allow any part of the arm except the contact sensor to enter unknown areas to prevent possible hardware damage.
+
+Any planar covering algorithm can be extended to 3D by being applied sequentially to consecutive planes. The idea has been described in \cite{gen3d}, even though in the context of covering the ocean floor.
+
+In a continuous case, we divide the workspace along one dimension into a collection of planes spaced in intervals corresponding to the robot's sensing diameter. This way, when the robot completely covers two consecutive planes, the space in between them will have been covered as well.
+
+When we represent the environment in a grid, we simply choose use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm.
 
 \section{Method comparison}
 
+
 \end{document}
 
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "buriama8_dp"
+%%% End:
+%  LocalWords:  CPP
