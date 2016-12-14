@@ -1,21 +1,36 @@
 \documentclass[buriama8_dp.tex]{subfiles}
 \begin{document}
 
-\chapter{Robotic arm}
+\chapter{Robotic hardware and framework}
 
-\section{Kinova JACO\(^2\)}
-\begin{itemize}
-\item construction
-\item kinematics
-\end{itemize}
+\section{ROS}
+\label{sec:ros}
 
-\section{ROS interface}
+The arm (and the whole TRADR robot) run under the \emph{Robot Operating System} – ROS \cite{ros_paper}. This framework allows us to build robot software in a very modular fashion by providing us with standardized units (\uvz{nodes}) and M-to-N communication links (\uvz{topics}). Each hadrware component of the robot (e.g. a LIDAR or a motor driver) has its own driver node, and so does each functional software part (mapping, adaptive traversability etc.). In ROS, we can put these ready-made parts together easily, as well as design small and manageable pieces of software that integrate well with the rest of the environment and provide the new functionality we want.
+
+
+
+\section{Kinova JACO}
+We will be working with the Kinova JACO robotic arm. It is a 6 degrees of freedom lightweight robotic arm, designed by Kinova Robotics for use in assistive and collaborative applications. As it is meant to be mounted on mobile structures as wheelchairs, JACO's lightness makes it ideal for uses on mobile robots.
+
+\subsection{Arm kinematics}
+\label{subsec:arm_kinematics}
+
+The arm has slightly unusual geometry in its wrist. The wrist is not spherical (the axes of its joints do not intersect in one point), but consists of three revolute joints that have angular offsets of \(60\degr\) (see Figure~XX). This limits the workspace where the arm has full 6DOF capabilities, as the rotation of the wrist is limited. Usage of some inverse kinematics solvers is also impossible due to the non-standard geometry.
+
+\subsection{Kinova ROS driver}
+\label{subsec:kinova_ros}
+
+The manufacturer provides an opensource ROS library to operate the arm \cite{kinova_ros}. 
+
+
 \begin{itemize}
-\item KINOVA ROS driver - brief description
 \item moveit
+\item TRAC IK
 \end{itemize}
 
 \section{Tactile sensing}
+
 \begin{itemize}
 \item optoforce sensor
 \item sensing stick

@@ -4,7 +4,7 @@
 
 % The class takes all the key=value arguments that \ctusetup does,
 % and a couple more: draft and oneside
-\documentclass[twoside]{ctuthesis}
+\documentclass[twoside,oneside]{ctuthesis}
 
 
 \ctusetup{
@@ -112,10 +112,7 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \end{declaration}
 
 % Only for testing purposes
-\listfiles
 \usepackage[pagewise]{lineno}
-\usepackage{lipsum,blindtext}
-\usepackage{mathrsfs} % provides \mathscr used in the ridiculous examples
 
 %\usepackage{graphicx}
 \graphicspath{{./}{./figures/}}
@@ -133,6 +130,11 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \newcommand*{\ve}[1]{\mathbf{#1}}
 \newcommand*{\half}{^1\!/_{\!2}}
 \newcommand*{\difrac}[2]{^{#1\!}/_{\!#2}}
+
+\newcommand*{\TODO}[1]{{\color{red}\textbf{TODO:} \textit{#1}}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
 
 \setlength{\parskip}{2ex plus 0.2ex minus 0.1ex}
 
@@ -156,13 +158,13 @@ Later, we describe the implementation of the algorithm in ROS and experiments wi
 \subfile{chap02_robot}
 
 
-\subfile{chap03_cpp}
-
-
 \subfile{chap04_expl}
 
 
-\chapter{Implementation}
+\subfile{chap03_cpp}
+
+
+\subfile{chap05_implement}
 
 
 
