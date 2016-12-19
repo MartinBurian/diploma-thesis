@@ -120,18 +120,25 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \usepackage{caption}
 \usepackage{subcaption}
 \captionsetup[subfigure]{labelformat=simple,labelsep=period}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
-\providecommand*{\diff}{\textrm{d}}
+\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
+
+\providecommand*{\diff}{\textrm{d}\,}
+\providecommand*{\pdiff}{\partial\,}
 \newcommand*{\m}[1]{\(#1\)}
 \newcommand*{\unit}[1]{\; \textrm{[#1]}}
 \newcommand*{\degr}{^\circ}
 \newcommand*{\uvz}[1]{``#1''}
 \newcommand*{\quot}[2]{\textit{\uvz{#1}}\cite{#2}}
 \newcommand*{\ve}[1]{\mathbf{#1}}
+\newcommand*{\mat}[1]{\mathbf{#1}}
 \newcommand*{\half}{^1\!/_{\!2}}
 \newcommand*{\difrac}[2]{^{#1\!}/_{\!#2}}
 
-\newcommand*{\TODO}[1]{{\color{red}\textbf{TODO:} \textit{#1}}}
+\newcommand*{\TODO}[1]{{\color{red} TODO:~#1}}
+\newcommand*{\REV}[1]{{\color{orange} #1??}}
 
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -141,6 +148,7 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \begin{document}
 
 \maketitle
+\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
 
 \chapter{Introduction}
 \label{chap:intro}
