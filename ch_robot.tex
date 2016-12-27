@@ -37,6 +37,9 @@ We will be working with the Kinova JACO robotic arm. It is a 6 degrees of freedo
 
 The arm has slightly unusual geometry in its wrist. The wrist is not spherical (the axes of its joints do not intersect in one point), but consists of three revolute joints that have angular offsets of \(60\degr\) (see Figure~XX). This limits the workspace where the arm has full 6DOF capabilities, as the rotation of the wrist is limited. Usage of some inverse kinematics solvers is also impossible due to the non-standard geometry.
 
+\subsection{Arm workspace}
+\TODO{}
+
 \subsection{Kinova ROS driver}
 \label{subsec:kinova_ros}
 
@@ -88,11 +91,16 @@ The user interface, or client libraries, for MoveIt are prepared in C++ and pyth
 
 
 \subsection{Robot interface}
-\label{subsec:moveut_ri}
+\label{subsec:moveit_ri}
 
 MoveIt interfaces with the robot hardware by an action server implementing the JointTrajectoryAction. The server then drives the arm hardware. The JointTrajectoryAction is specified as a trajectory in space of joint velocities, prepared by the motion planner with respect to both the arm kinematics (preventing collisions) and the arm dynamics (taking limits on joint acceleration into account).
 
 In case of the Kinova ROS driver, no such server is provided by the manufacturer. A pull request on Github containing this functionality exists, but is not a part of the release yet. We used an implementation of this server by \REV{Matěj Balga}, which we updated to work with the newest drivers from Kinova.
+
+\subsection{Arm simulator}
+\label{subsec:arm_sim}
+
+\TODO{Describe fake arm driver}
 
 \subsection{Inverse Kinematics solver -- TRAC-IK}
 \label{subsec:tracik}
@@ -103,10 +111,17 @@ During our initial experiments with the arm, we encountered puzzling behaviors o
 
 Because of the slightly non-standard arm kinematics (see section \ref{subsec:arm_kinematics}), the default IK solver used by MoveIt (the KDL numerical solver) would sometimes produce a solution that indeed reaches the desired end effector pose, but that is very far in joint space from the current joint state, even when a very small end effector motion is required.
 
-\TODO{Different configurations image and description}
+\begin{figure}[ht]
+  \centering
+  \TODO{Different configurations image and description}
+  %\includegraphics[options]{figures/path.pdf}
+  \label{fig:label}
+  \caption{}
+\end{figure}
 
 This is caused by the KDL implementation. KDL finds the IK solution by iterating iteratively.
 
+\TODO{Should the algorithm be here? Exclude it completely?}
 \begin{algorithm}[htp]
 \begin{algorithmic}
   \State \textbf{Input:} \(\vec p \gets\) desired target carthesian pose
@@ -185,6 +200,39 @@ The sensor has its own DAQ module, which communicates with a computer via a seri
 \label{subsec:sense_tool}
 
 The Optoforce sensor is relatively small. Mounting it on the JACO arm and using it to sense direct contact with an obstacle would mean the arm would get uncomfortably close to it. We devised a way to extend the sensor so that force readings are taken not at the sensor dome, but at a stick. This increases the arm range and makes it possible to keep the arm safely away from unknown obstacles.
+
+
+\begin{figure}[ht]
+  \centering
+
+  \begin{subfigure}[t]{0.49\textwidth}
+   \label{fig:opto_frame}
+   \includegraphics[width=\textwidth]{otpo_frame.pdf}
+   \caption{}
+  \end{subfigure}
+  %
+  \begin{subfigure}[t]{0.49\textwidth}
+   \label{fig:frame_forces}
+   \includegraphics[width=\textwidth]{otpo_frame_forces.pdf}
+   \caption{}
+  \end{subfigure}
+
+ \caption[Sensing tool]{The sensing tool assembly.}
+ \label{fig:opto_frame}
+\end{figure}
+
+
+\begin{figure}[ht]
+  \centering
+  \TODO{Photo of whole setup}
+  %\includegraphics[options]{figures/path.pdf}
+  \caption{}
+  \label{fig:label} 
+\end{figure}
+
+The stick acts as a lever with the pivot point being the assembly frame. When a lateral force is applied to the stick, the sensor records force in oppposite direction. Axial force is applied directly to the sensor. The principle is illustrated in Figure~\ref{fig:frame_forces}.
+
+The sensor dome is in contact with a cap attached to the stick. The cap is pressed against the dome with a preloaded force, to ensure accurate measurement of even very small forces applied to the stick. The deformation of the dome is limited by a pair of nuts that limit the travel of the stick.
 
 
 
