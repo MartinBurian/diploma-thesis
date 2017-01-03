@@ -3,12 +3,22 @@
 
 \chapter{Implementation}
 
+We implemeted our solution to the exploration task in the ROS framework.
+
 \section{Architecture}
 \label{sec:impl_arch}
+
+The architecture of the system is designed to fit into the modular ROS framework. Each functional part is implemented as a standalone ROS node, which can be used independently on the rest of them.
+
+A node runs the optoforce driver and publishes the force readings to a common topic. If any other component wishes to use them, they are available system-wide.
+
+The exploration algorithm runs in a node of its own. Exploration of the environment can be triggered by \REV{calling an action the exploration node implements}. The node depends on the move\_group node running with all its configuration loaded.
 
 
 \section{Optoforce driver}
 \label{sec:opto_driver}
+
+The Optoforce driver is implemented in Python. 
 
 
 \section{Algorithm implementation}

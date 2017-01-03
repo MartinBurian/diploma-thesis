@@ -4,7 +4,7 @@
 
 % The class takes all the key=value arguments that \ctusetup does,
 % and a couple more: draft and oneside
-\documentclass[twoside,oneside]{ctuthesis}
+\documentclass[twoside]{ctuthesis}
 
 
 \ctusetup{
@@ -29,15 +29,15 @@
 	subfieldofstudy-czech = {Počítačové vidění a digitální obraz},
 	keywords-czech = {slovo, klíč},
 	keywords-english = {word, key},
-	day = 10,
-	month = 2,
+	day = 9,
+	month = 1,
 	year = 2017,
-	specification-file = {ctutest-zadani.pdf},
-%	front-specification = true,
+	specification-file = {zadani.pdf},
+	front-specification = true,
 %	front-list-of-figures = false,
 %	front-list-of-tables = false,
 %	monochrome = true,
-%	layout-short = true,
+%	layout-short = true,ded. One way to do is with a \makebox command (6). This is the LaTeX code produce made by the above 
 }
 
 \ctuprocess
@@ -106,9 +106,11 @@ Děkuji ČVUT, že mi je tak dobrou \emph{alma mater}.
 
 % Declaration / Prohlaseni
 \begin{declaration}
-Prohlašuji, že jsem předloženou práci vypracoval samostatně, a že jsem uvedl veškerou použitou literaturu.
+I declare that the presented work was developed independently and that I have listed all sources of information used within in in accordance with the methodical instructions for observibg principles in preparation of university theses.
 
-V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
+Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
+
+\makebox[10em]{\dotfill}
 \end{declaration}
 
 % Only for testing purposes
@@ -132,51 +134,61 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \newcommand*{\degr}{^\circ}
 \newcommand*{\uvz}[1]{``#1''}
 \newcommand*{\quot}[2]{\textit{\uvz{#1}}\cite{#2}}
-\newcommand*{\ve}[1]{\mathbf{#1}}
+\renewcommand*{\vec}[1]{\mathbf{#1}}
 \newcommand*{\mat}[1]{\mathbf{#1}}
 \newcommand*{\half}{^1\!/_{\!2}}
 \newcommand*{\difrac}[2]{^{#1\!}/_{\!#2}}
+\newcommand*{\R}{I\!\!R}
 
-\newcommand*{\TODO}[1]{{\color{red} TODO:~#1}}
-\newcommand*{\REV}[1]{{\color{orange} #1??}}
+\newcounter{todo}
+\newcommand{\TODO}[1]{\refstepcounter{todo}%
+{\color{red}TODO:~#1}%
+\addcontentsline{tod}{section}{\thetodo~#1}}%
+
+\newcommand{\REV}[1]{\refstepcounter{todo}%
+{\color{orange}#1??}%
+\addcontentsline{tod}{section}{\thetodo~#1}}%
+
+\makeatletter
+%\newcommand\todoname{TODO}
+\newcommand\listtodoname{List of todos!}
+\newcommand\listoftodos{%
+  \section*{\listtodoname}\@starttoc{tod}}
+\makeatother
+
 
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \setlength{\parskip}{2ex plus 0.2ex minus 0.1ex}
+\setcounter{tocdepth}{1}
 
+\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
+
+%%%% BODY %%%%
 \begin{document}
 
 \maketitle
-\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
 
-\chapter{Introduction}
-\label{chap:intro}
-
-\section{Outline of the thesis}
-\label{sec:outline}
-
-First, we will present the hardware used in the exploration task, the Kinova JACO robotic arm and the Optoforce 3D force sensor with our custom extension.
-
-Next, we present the overview of state-of-the-art methods of coverage path planning, and the rationale behind our method choice.
-
-Later, we describe the implementation of the algorithm in ROS and experiments with the exploration methods, both simulated and on a real robotic arm.
+\listoftodos
 
 
-\subfile{chap02_robot}
+\subfile{ch_intro}
 
 
-\subfile{chap04_expl}
+\subfile{ch_robot}
 
 
-\subfile{chap03_cpp}
+\subfile{ch_exploration}
 
 
-\subfile{chap05_implement}
+\subfile{ch_cpp}
 
 
+\subfile{ch_implementation}
 
-\chapter{Experiments}
+
+\subfile{ch_experiments}
 
 
 
@@ -198,6 +210,7 @@ Later, we describe the implementation of the algorithm in ROS and experiments wi
 
 \bibliographystyle{unsrt}
 \bibliography{buriama8_dp}
+
 
 %\ctutemplate{specification.as.chapter}
 

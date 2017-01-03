@@ -16,7 +16,7 @@ The first such task that comes to mind is of course cleaning. This sometimes ted
 
 Several different approaches to the problem appeared over time. A typical application takes place in a 2-dimensional, previously known environment. We will introduce several inspiring methods of 2D coverage, and then present a scheme to generalize them to 3D.
 
-\TODO{define workspace, obstacle}
+The robot moves in a defined workspace, a portion of space where it performs its tasks and which it cannot leave. The environment may be known in advance. In the workspace, there (possibly) are obstacles which the robot needs to avoid not to damage itself.
 
 \subsection{Random strategies}
 \label{subsec:random_cpp}
@@ -39,7 +39,7 @@ Another heuristic method used is a modification of the WaveFront method \cite{wa
 Heuristic strategies do not provide any optimality guarantees, and can perform very badly in the worst cases. They are however very easy to implement, and can cope with unknown environments well. 
 
 \subsection{Exact cellular decomposition}
-\label{subsec:label}
+\label{subsec:boustrop}
 When the environment is known and can be represented, or at least approximated, by polygons or differential functions, exact cellular decomposition approaches can be used. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}, an example of which can be seen in Figure~\ref{fig:zig_pattern}. The traversal order is where the complexity is hidden in this technique.
 
 \begin{figure}[ht]
@@ -49,7 +49,9 @@ When the environment is known and can be represented, or at least approximated, 
   \label{fig:zig_pattern}
 \end{figure}
 
-The two commonly used decomposition techniques are trapezoid decomposition and boustrophedon decomposition. Trapezoid decomposition is usually used to index point location in planar decomposition. Here, only the exterior of obstacle polygons is decomposed. Then an adjacency graph of the cells is created and a path through the graph is computed, visiting every cell (vertex) at least once. As the path is followed, each cell is covered by the zig-zag pattern, and then the robot moves to the next cell.
+The two commonly used decomposition techniques are trapezoid decomposition and boustrophedon decomposition. Both decompositions work with the assumption that no two critical points\footnote{see \cite{optimalcoverage} for definition of critical points} share the same \(x\) coordinate.
+
+Trapezoid decomposition is usually used to index point location in planar decomposition. \TODO{cite?} Here, only the exterior of obstacle polygons is decomposed. Then an adjacency graph of the cells is created and a path through the graph is computed, visiting every cell (vertex) at least once. As the path is followed, each cell is covered by the zig-zag pattern, and then the robot moves to the next cell.
 
 The trapezoidal decomposition typically generates many adjacent cells that could be merged and still traversed trivially, but more efficiently, because less border areas will need to be handled. The boustrophedon decomposition is similar to the trapezoidal, only certain cells are merged together, eliminating suboptimal coverage of their boundaries. Examples of the two decompositions are presented in Figure~\ref{fig:decomps}.
 
@@ -71,7 +73,9 @@ The trapezoidal decomposition typically generates many adjacent cells that could
 
 This class of methods is best for perfectly known environments, which is not our case. We mention it to show how exact solutions in known environments can work.
 
-\TODO{CCr?}
+\def\CCr{CC\textsubscript{r} }
+A method for coverage of unknown rectilinear environments with a contact sensor called \CCr  (Continuous Coverage of Rectilinear environments) has been described in \cite{ccrpaper}. It builds on the fact that while the traditional decompositions explicitly forbid rectilinear environments, they are easy to decompose themselves as all the cells in the decompositions will be rectangles. \CCr builds the decomposition gradually while exploring the environment. The authors give a proof of completeness in \cite{ccrpaper}, but no statement on the optimality of the algorithm is given. The requirement of rectilinear envitonment is however very strong.
+
 
 \subsection{Grid neural network}
 \label{subsec:nncpp}
@@ -136,10 +140,11 @@ In a continuous case, we divide the workspace along one dimension into a collect
 When we represent the environment in a grid, we simply choose to use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm.
 
 \section{Method comparison}
+\label{sec:cpp_comp}
 
 Of the methods presented above, the ones applicable to our problem are the neural network approach and the heuristic approach. The exact methods need to know the environment completely, to make sure it is traversed optimally.
 
-\TODO{Why not iterative exact?}
+A possible approach to extend the exact methods to our task is to iterate them, replanning the path every time an obstacle is encountered and hence every time the environment the robot assumes changes. This would be impractically time-consuming, as the replanning would happen very often compared to the time the actial execution of the plan would take.
 
 The heuristic approaches and the NN approach share the common scheme of selecting a path locally, and moving to the closest unknown cell if no such path can be found. 
 

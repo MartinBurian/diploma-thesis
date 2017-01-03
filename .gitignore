@@ -8,5 +8,6 @@
 *.out
 *.synctex.gz
 *.toc
+*.tod
 *.pdf
 _region_.*
