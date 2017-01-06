@@ -71,7 +71,7 @@ The results of running the coverage algorithm are shown in Figure~\ref{fig:heur_
     \label{fig:heur_3d_env}
   \end{subfigure}
   
-  \caption[Coverage path -- compact space heuristic in 3D]{}
+  \caption[Coverage path -- compact space heuristic in 3D]{The coverage path generated in 3D in (a) empty space and (b) benchmark environment. The obstacles are represented by spheres at the given point}
   \label{fig:heur_3d_coverage}
 \end{figure}
 
@@ -83,8 +83,94 @@ When obstacles are present, the coverage path is different in each layer partly 
 \section{Simulated arm experiments}
 \label{sec:exp_sim_arm}
 
+\subsection{Moving the arm}
+\label{subsec:exp_move}
+
+In Sections \ref{subsec:motion_planning} and \ref{subsec:no_plan}, we mention two ways of driving the robot: motion planning and Jacobian transformation. Both have their advantages and disadvantages. We tested them by running the algorithm with each as the robot driving function. We used only the simulated arm ar first to protect the hardware from unfortunate accidents.
+
+We let the simulated arm explore empty space. We evaluated the failures of the movement, such as getting stuck, and the smoothness, precision and optimality of the overall path.
+
+The motion planning method is very reliable in always reaching the desired target pose, and reaching it precisely, when performing a step in the algorithm. In the test run, all the steps were carried out successfuly. The planning took in the order of hundreds of milliseconds for each step. Even when using the TRAC-IK solver, sometimes a joint configuration  very different from the current one was found as the IK solution by the solver. The planner then had no other option than to plan a more complicated path, perhaps rotating the first joint \(180\degr\).
+
+The Jacobian method is extremely fast. The pause at each step is only a few milliseconds, the arm seemingly does not stop at all. We tested the control algorithm by driving the arm across its workspace along the \m x axis. The arm followed the given trajectory with tolerance of 2\,mm. To further improve the here completely satisfactory result, we turned on the error correcting term described in Section~\ref{subsec:impl_drv_jacob}. The precision then got near perfect, with error of at most 0.4\,mm. The errors are depicted in Figure~\ref{fig:err_jac_real}. 
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=7cm]{jacob_error_sim.pdf}
+  \caption{Position error during simulated test drive}
+  \label{fig:err_jac_sim}
+\end{figure}
+
+The error is probably caused by the numerical error attained in integrating the speeds in discrete steps in the control loop.
+
+In some cases, mostly directly in front of the arm base, a near singularity is reached. Such configuration appears in the test trajectory at 45\,cm, where the end effector passed in front of the base. While we attempt to solve things by slowing the arm down (see the implentation details in Section~\ref{subsec:impl_drv_jacob}), in some configurations, we get so close to the exact singular configurations that no slow-down helps. The driving algorithm identifies such situations and reports failure to higher layers.
+
+The final combined solution described in Section~\ref{subsec:impl_drv} proved to combine the best properties of both the methods. The fallback to planning is used exactly when neccessary. In some cases, however, the Jacobian motion gets the arm stuck in an unexplored collision box because of a slow collision check. Then, even planning fails to move to explore that cell and it is misclassified as unreachable. This results in false positive obstacles identified in the environment.
+
+\subsection{Exploring 3D environment}
+\label{subsec:sim_arm_cover}
+
+We tested the final coverage algorithm first in the simulator. We ran it first in empty environment, then in the benchmark environment. The benchmark environment was simulated by publishing false force readings when the arm explored an occupied point.
+
+
+
+
 \section{Real arm experiments}
 \label{sec:exp_real_arm}
+
+\subsection{Moving the arm}
+\label{subsec:label}
+
+We aimed to confirm the results of movement simulation on the real hardware. Motion planning exhibited the same bahavior as in the simulation. It worked reliably, but in some seemingly random cases, a very complicated plan was generated. These complicated motion plans threaten both the spectators and the cable linking the sensing tool to the host computer.
+
+When we repeated the Jacobian control test we used with the simulated arm, we discovered that the real arm deviates from the intended trajectory significantly. After following the same trajectory, the arm deviated 6\,cm in \m y and 4\,cm in \m z direction. In the end, we had to cerrect the arm considerably in both location and orientation. We assume the error was given by our negelction of the arm dynamics, which we implement by assuming the given joint velocity can be reached immediately by the arm.
+
+This high error gave us the incentive to implement the regulator that would correct the errors. The results were excellent, with maximum error along the path 2\,cm and final error  The errors are depicted in Figure~\ref{fig:err_jac_real}. 
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=7cm]{jacob_error_sim.pdf}
+  \caption{Position error during simulated test drive}
+  \label{fig:err_jac_sim}
+\end{figure}
+
+The error is probably caused by the numerical error attained in integrating the speeds in discrete steps in the control loop.
+
+In some cases, mostly directly in front of the arm base, a near singularity is reached. Such configuration appears in the test trajectory at 45\,cm, where the end effector passed in front of the base. While we attempt to solve things by slowing the arm down (see the implentation details in Section~\ref{subsec:impl_drv_jacob}), in some configurations, we get so close to the exact singular configurations that no slow-down helps. The driving algorithm identifies such situations and reports failure to higher layers.
+
+The final combined solution described in Section~\ref{subsec:impl_drv} proved to combine the best properties of both the methods. The fallback to planning is used exactly when neccessary. In some cases, however, the Jacobian motion gets the arm stuck in an unexplored collision box because of a slow collision check. Then, even planning fails to move to explore that cell and it is misclassified as unreachable. This results in false positive obstacles identified in the environment.
+
+\subsection{Exploring 3D environment}
+\label{subsec:sim_arm_cover}
+
+We tested the final coverage algorithm first in the simulator. We ran it first in empty environment, then in the benchmark environment. The benchmark environment was simulated by publishing false force readings when the arm explored an occupied point.
+
+
+
+
+\section{Real arm experiments}
+\label{sec:exp_real_arm}
+
+\subsection{Moving the arm}
+\label{subsec:label}
+
+We aimed to confirm the results of movement simulation on the real hardware. Motion planning exhibited the same bahavior as in the simulation. It worked reliably, but in some seemingly random cases, a very complicated plan was generated. These complicated motion plans threaten both the spectators and the cable linking the sensing tool to the host computer.
+
+When we repeated the Jacobian control test we used with the simulated arm, we discovered that the real arm deviates from the intended trajectory significantly. After following the same trajectory, the arm deviated 6\,cm in \m y and 4\,cm in \m z direction. In the and, we had to cerrect the arm considerably in both location and orientation. We assume the error was given by our negelction of the arm dynamics, which we implement by assuming the given joint velocity can be reached immediately by the arm.
+
+To compensate the error, we combined the velocity given by the exploration algorithm with a correction term, which keeps the arm on the defined line as described in . The results of the corrected control algorithm is significantly better, staying within 2\,cm of the line. The errors are depicted in Figure~\ref{fig:err_jac_real}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=8cm]{jacob_error_real.pdf}
+  \caption{Plot of position error during the real test drive}
+  \label{fig:err_jac_real}
+\end{figure}
+
+Another issue we noticed was that the movement was in no case as smooth as in the simulator. The arm came to a complete stop every time a decision was made on where to continue. The movement became nearly as jerky as the planned movement. We account this error to the arm dynamics as well, as getting the arm to move seems to take as much time as planning the next step. This could in the future be resolved by splitting the driving and planning into two independent computations, where the next direction would be known even before the arm arrives at the target position. We did not implement the solution due to its fearsome implementation complexity.
+
+\subsection{Exploration of 3D space}
+\label{subsec:label}
 
 
 

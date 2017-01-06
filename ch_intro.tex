@@ -14,9 +14,9 @@ Our task is to use a robotic arm to explore space in front of the robot to ident
 
 The whole system (the robotic platform and the arm) run in the Robot Operating System (\emph{ROS}) framework. To maintain system consistency and simplify implementation, we will be implementing our solution in ROS as well. We provide an overview of the framework in Section~\ref{sec:ros}, where we briefly present the basic concepts to help the reader grasp what is underlying our implementation decisions.
 
-The arm is an advanced piece of hardware and embedded programming, with builtin controls capable of driving the arm in space. The functionality is exposed to the system via a manufacturer-provided driver. We describe both the arm hardware and driver in Section~\ref{sec:jaco}. We also describe the force sensor and its extension we designed for this application. 
+The arm is an advanced piece of hardware and embedded programming, with builtin controls capable of driving the arm in space. The functionality is exposed to the system via a manufacturer-provided driver. We describe both the arm hardware and driver in Section~\ref{sec:jaco} and mention basic theory of robotic manipulators. We also describe the force sensor and its extension we designed for this application. 
 
-Although the driver exposes simple interfaces to control the arm movement, it is neccessary to control the arm's motion in context of the whole environment including the robotic platform and any obstacles around the robot. This task is solved by \uvz{MoveIt!}, a library built around functionalities required to use robotic manipulators. We present the library in Section~\ref{sec:moveit}. We also include information about the mathematical and algorithmic framework of robotic manipulators and planning and controlling their motion that is crucial for solving our task.
+Although the driver exposes simple interfaces to control the arm movement, it is necessary to control the arm's motion in context of the whole environment including the robotic platform and any obstacles around the robot. This task is solved by \uvz{MoveIt!}, a library built around functionalities required to use robotic manipulators. We present the library in Section~\ref{sec:moveit}. We also include information about the mathematical and algorithmic framework of robotic manipulators and planning and controlling their motion that is crucial for solving our task.
 
 \section{Outline of the thesis}
 \label{sec:outline}
@@ -26,7 +26,6 @@ First, we will present the hardware used in the exploration task, the Kinova JAC
 Next, we present the overview of state-of-the-art methods of coverage path planning, and the rationale behind our method choice.
 
 Later, we describe the implementation of the algorithm in ROS and experiments with the exploration methods, both simulated and on a real robotic arm.
-
 
 
 \end{document}

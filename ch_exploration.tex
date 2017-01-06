@@ -3,7 +3,7 @@
 
 \chapter{Algorithm choices}
 
-The robot is to explore the environment in front of it, and to record its findings in a map. The map needs to be represented in such way that it can be used both in further exploration, to prevent the arm from hitting obstacles, and to further operate the robot, e.g. decide if it is possible to move forward. We also need to find a framework in which we will formulate and solve the problem of guiding the robot through the whole environment.
+The robot is to explore the environment in front of it, and to record its findings in a map. The map needs to be represented in such way that it can be used both in further exploration, to prevent the arm from hitting obstacles, and to further operate the robot, e.g. decide if it is possible to move forward. We also need to find a framework in which we will formulate and solve the problem of guiding the robot through the whole environment. And the decision needs to be made on how to drive the arm.
 
 \section{Map representation}
 
@@ -41,13 +41,18 @@ As an approximation of a Hamiltonian path on the graph, we tried to plan the sho
 % \label{eqn:shunting}
 % \end{equation}
 
-RRT, random sampling motion planning algorithm mentioned above, has been modified in \cite{rita} to directly find a path that acquires sensor data from the whole environment. The new algorithm, RITA, samples the control space just like plin RRT. RITA however optimizes both environment coverage by sensors and path length. RITA shows promising results, but with sensors that cover large portions of space, like laser range finders. In our case, the path would need to be very dense as we have to use only contact sensor.
+RRT, random sampling motion planning algorithm mentioned above, has been modified in \cite{rita} to directly find a path that acquires sensor data from the whole environment. The new algorithm, RITA, samples the control space just like plain RRT. RITA however optimizes both environment coverage by sensors and path length. RITA shows promising results, but with sensors that cover large portions of space, like laser range finders. In our case, the path would need to be very dense as we have to use only contact sensor.
 
 As finding an optimal path is highly complex, we considered solving the task with Reinforcement Learning (\emph{RL}). In RL, the agent (the algorithm controlling the arm in our case) learns which actions to take in given state by interactive trial and error. We formalize a set of state \(S\), and actions \(A\). In our case, the state could be the current position of the robot and the map of the environment, and actions \uvz{move left} and \uvz{move forward}, or directly joint velocities for the arm joints. We then define reward function \(f: S \mapsto \R\) which specifies a reward the agent receives in given state. The agent learns a function \(q: S \mapsto A\) that, for a state \(s \in S\), return action \(a\) that maximizes the reward the robot gets in the future. The problem in this case is the representation of the function, as the state space is extremely large (\(\{0,1\}^{N \times N \times N}\)). The recently very popular deep neural networks have been used to represent a complex, high-dimensional function in RL \cite{deeprl}. This makes using RL in this case tractable, but highly complex. As the agent needs to interact with the arm to learn how to use it to explore space, it would be necessary either to allow the agent to operate the arm for a prolonged period of time while taking measures against damaging the arm in the process, or to build an extensive simulation of the whole system where the agent could try policies safely and gradually learn to operate the arm to fulfill its goals.
 
 The problem of traversing the whole environment is not uncommon and arises in various applications. The problem is referred to as Coverage Path Planning (\emph{CPP}) problem, and is aimed to be solved by clever algorithms that solve the highly complex planning problem in reasonable time by hiding some of the complexity in heuristic solutions. The algorithms can be generalized to a 3D world. The CPP is elaborated upon in Chapter~\ref{chap:cpp}.
 
 Considering all the methods we presented above, we decided to solve the problem by Coverage path planning. It provides tractable, relatively simple solution to the problem of exploring the environment.
+
+\section{Arm control mechanism}
+\label{sec:label}
+
+\TODO{Ano? Ne?}
 
 \end{document}
 

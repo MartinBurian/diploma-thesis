@@ -20,6 +20,30 @@ The exploration algorithm runs in a node of its own. Exploration of the environm
 
 The Optoforce driver is implemented in Python. 
 
+\section{Robot motion}
+\label{sec:rob_impl}
+
+We mentioned two different ways of driving the arm in Section~\ref{sec:moveit}. As both have theit pros and cons, we implemented both of them and tested them to decide which one to use. The experiment testing the implementation is described in Section~\ref{subsec:exp_move}.
+
+\subsection{Jacobian-driven motion}
+\label{subsec:impl_drv_jacob}
+
+As we wrote, for a cartesian twist (linear and angular velocity) vector \(\dot{\vec p}\), we can obtain joint velocity \(\dot{\vec q}\) which will result in end effector movement with the given twist. This can be done by calculating the Moore-Penrose pseudoinverse of the Jacobian matrix, preferably through SVD. Details are given in Section~\ref{subsec:no_plan}.
+
+The whole process of obtaining joint velocities for a given twist is already implemented in MoveIt. The method is a part of RobotState, a class representing the joint configuration of the manipulator. It is implemented exactly as stated above, with checks on the singular values during the pseudoinverse computation to guarantte numerical stability of the approach.
+
+The velocity is then applied only for a small amount of time in a control loop; in each iteration, the current state is obtained and the joint velocities corresponding to the twist are updated.
+
+\subsection{Planned motion}
+\label{subsec:impl_drv_plan}
+
+
+\subsection{Hybrid solution}
+\label{subsec:impl_drv}
+
+\TODO{Exploring lowest 3 layers with angled tool, to reach them better}
+
+
 
 \section{Algorithm implementation}
 \label{sec:alg_impl}

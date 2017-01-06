@@ -6,7 +6,7 @@
 \section{ROS}
 \label{sec:ros}
 
-The arm (and the whole TRADR robot) run under the \emph{Robot Operating System} – ROS \cite{ros_paper}. This framework allows us to build robot software in a very modular fashion by providing us with standardized units (\uvz{nodes}) and M-to-N communication links (\uvz{topics}). Each hardware component of the robot (e.g. a LIDAR or a motor driver) has its own driver node, and so does each functional software part (mapping, adaptive traversability etc.). In ROS, we can put these ready-made parts together easily and run them in a distributed fashion, as each node can run on a different computer and the system will automatically relay the information between the hosts. Th modularity also guides us to design small and manageable pieces of software that integrate well with the rest of the environment and provide the new functionality we want.
+The arm (and the whole TRADR robot) run under the \emph{Robot Operating System} – ROS \cite{ros_paper}. This framework allows us to build robot software in a very modular fashion by providing us with standardized units (\uvz{nodes}) and M-to-N communication links (\uvz{topics}). Each hardware component of the robot (e.g. a LIDAR or a motor driver) has its own driver node, and so does each functional software part (mapping, adaptive traversability etc.). In ROS, we can put these ready-made parts together easily and run them in a distributed fashion, as each node can run on a different computer and the system will automatically relay the information between the hosts. The modularity also guides us to design small and manageable pieces of software that integrate well with the rest of the environment and provide the new functionality we want.
 
 The ROS framework is only a common interface specification, with the actual implementation of a node completely independent on other nodes. Each node can be implemented in a different programming language, as long as they conform with the communication standards.
 
@@ -31,23 +31,43 @@ A good example for an action server is one for driving the robot to a defined po
 
 \section{Kinova JACO}
 \label{sec:jaco}
-We will be working with the Kinova JACO robotic arm. It is a 6 degrees of freedom lightweight robotic arm, designed by Kinova Robotics for use in assistive and collaborative applications. As it is meant to be mounted on mobile structures as wheelchairs, JACO's lightness makes it ideal for uses on mobile robots.
+We will be working with the Kinova JACO robotic arm. It is a 6 degrees of freedom lightweight robotic arm, designed by Kinova Robotics for use in assistive and collaborative applications. Originally designed to be used in assistive robotics, mounted on mobile structures as wheelchairs, JACO's lightness makes it ideal for uses on mobile robots \cite{kinova}.
+
+\TODO{JACO image}
+
+\subsection{Serial manipulator}
+\label{subsec:arm_theory}
+
+The JACO arm is a serial manipulator, meaning that it is a chain of links interleaved with joints. A movement in a joint affects all the following joints and links in the chain. The base of the chain is often a fixed base, while the tip of the chain is reffered to as the \emph{end effector}. The positional behavior of the arm is referred to as arm kinematics.
+
+The compound joint and link transformations (rotations and translations, respectively) links the joint configuration to the end effector pose (as user in ROS terminology, representing position \(\vec p\) and orientation \(\vec r\)). Computation of the end effector pose from joint angles \(\vec q = (q_1 \ldots q_n)\), a column vector where \m n is the number of joints, is referred to as \emph{Forward Kinematics -- FK} computation. From now on, we consider a 6DOF manipulator like JACO.
+
+The inverse problem is finding joint values that reach the given end efffector pose, and is called \emph{Inverse Kinematics - IK}. As many inverse problems, it is considerably harder to solve than the forward problem \cite[sec. 2.12]{manipulators}; it is often solved numerically.
+
+When not positions, but velocity of the end effector and joints is studied, it is in the field of differential kinematics. The relation between the joint angular velocities \(\dot{\vec q}\) and end effector pose velocity (usually called \emph{twist})
+\[\vec v = \colvec{\dot{\vec p}}{\vec \omega},\]
+where \(\dot{\vec p}\) represents linear velocity and \(\vec \omega\) anglular velocity, is described by the Jacobian matrix \(\mat J(\vec q) \in \R^{6 \times 6}\) of the manipulator:
+\[
+  \vec v = \mat J(\vec q)\dot{\vec q}
+\]
+
+The inverse problem is again considerably harder, as it involves inverting the Jacobian (if it is regular). As inversions in possibly near singular matrices are numerically unstable, pseudoinverse that deal with singularities is often used.
 
 \subsection{Arm kinematics}
 \label{subsec:arm_kinematics}
 
-The arm has slightly unusual geometry in its wrist. The wrist is not spherical (the axes of its joints do not intersect in one point), but consists of three revolute joints that have angular offsets of \(60\degr\) (see Figure~\ref{fig:jaco_schema}). This limits the workspace where the arm has full 6DOF capabilities, as the rotation of the wrist is limited. Usage of some inverse kinematics solvers is also impossible due to the non-standard geometry.
+The arm has slightly unusual geometry in its wrist. The wrist is not spherical (the axes of its joints do not intersect in one point), which means that positioning the arm in a given pose cannot be separated into position and orientation problems. Usage of some inverse kinematics solvers that count on this is thus impossible.
+
+Instead, the wrist consists of three revolute joints that have angular offsets of \(60\degr\) (see Figure~\ref{fig:jaco_schema}). This limits the workspace where the arm has full 6DOF capabilities, as the rotation of the wrist is limited; however, the arm exhibits this limitations only in extreme poses.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{jaco_spec_drawing.png}
-  \caption[JACO blueprint]{JACO arm technical specification. Note the wrist (last three joints) construction that limits the enf effector orientation. Taken from \cite{jaco_spec}}
+  \caption[JACO blueprint]{JACO arm technical specification. Note the wrist (last three joints) construction that limits the end effector orientation. Taken from \cite{jaco_spec}}
   \label{fig:jaco_schema}
 \end{figure}
 
-
-\subsection{Arm workspace}
-\TODO{Arm workspace}
+The arm manufacturer states the reach of the arm is 90\,cm. The arm can actually reach beyond 100\,cm, but only with limited rotation. In the 90\,cm work range, a large range of hand orientations is still possible.
 
 \subsection{Kinova ROS driver}
 \label{subsec:kinova_ros}
@@ -59,7 +79,7 @@ The driver provides interfaces to moving the arm to joint space and Cartesian sp
 \subsection{Cartesian and joint space targets}
 \label{subsec:api_cart_action}
 
-Driving the arm to joint space and Cartesian space targets is possible via the respective action servers. The action servers accept Pose, resp. JointAngles message describing the desired target state. They report the current position back as the movement proceeds, and in the end return the actual pose the arm ended in. For the Cartesian pose target, no IK computation is performed by the driver itself, the target pose is only fed into the arm and the internal control algorithms take care of the rest. The movement also does not take any obstacle avoidance or collision prevention into account, except self-collisions that are checked.
+Driving the arm to joint space and Cartesian space targets is possible via the respective action servers. The action servers accept Pose, resp. JointAngles message describing the desired target state. They report the current position back as the movement proceeds, and in the end return the actual pose the arm ended in. For the Cartesian pose target, no IK computation is performed by the driver itself, the target pose is only fed into the arm and the internal control algorithms take care of the rest. The movement also does not take any obstacle avoidance or collision prevention into account, except self-collisions that are checked. This renders the features practically unusable if we know there are obstacles in the environment.
 
 \subsection{Cartesian and joint space velocity}
 \label{subsec:api_cart_vel}
@@ -77,7 +97,7 @@ The stop service stops all movements of the arm immediately. To resume operation
 \section{MoveIt!}
 \label{sec:moveit}
 
-The ROS framework was primarily designed to operate whole mobile robots; it is not so well suited to control robotic manipulators. To help in this area, the MoveIt! package was designed to facilitate this task. It encompasses the full stack necessary to operate a robotic arm, from managing the state of the scene, through manipulation, motion planning, collision-checking, IK solving to outputting ommands that can be used directly to control a manipulator.
+The ROS framework was primarily designed to operate whole mobile robots; it is not so well suited to control robotic manipulators. To help in this area, the MoveIt! package was designed to facilitate this task. It encompasses the full stack necessary to operate a robotic arm, from managing the state of the scene, through manipulation, motion planning, collision-checking, IK solving to outputting commands that can be used directly to control a manipulator.
 
 \subsection{MoveIt! architecture}
 \label{subsec:mvt_arch}
@@ -91,7 +111,7 @@ MoveIt runs a large monolithic node called move group. The move group is respons
   \label{fig:moveit_arch}
 \end{figure}
 
-The central node represents the move\_group, which listens to input from the robot hardware in the lower right, as point cloud sensors and introceptive sensors. It outputs commands to the manipulator to the controller with JointTrajectoryAction interface and is controlled by the inputs on the left. 
+The central node represents the move\_group, which listens to input from the robot hardware in the lower right, as point cloud sensors and introceptive sensors. It outputs commands to the manipulator to the controller with JointTrajectoryAction interface and is controlled by the inputs on the left. MoveIt has a plugin-oriented extensible architecture, where all services like IK solving and motion planning are defined as plugins, interchangable with other implementations.
 
 \subsection{User interface}
 \label{subsec:moveit_ui}
@@ -115,63 +135,26 @@ The driver could possibly be improved by interpolating the velocities on a splin
 
 During our initial experiments with the arm, we encountered puzzling behaviors of the motion planners. The arm would sometimes move along a seemingly random, unnecessarily long path. At closer investigation, we concluded that the planning was actually optimal, but what was wrong was the Inverse Kinematic (\emph{IK}) solution for the target pose.
 
-\TODO{Present forward and inverse kinematic theory? Maybe at least introduce the jacobian, as we use it later?}
-
 Because of the slightly non-standard arm kinematics (see section \ref{subsec:arm_kinematics}), the default IK solver used by MoveIt (the KDL numerical solver) would sometimes produce a solution that indeed reaches the desired end effector pose, but that is very far in joint space from the current joint state, even when a very small end effector motion is required.
 
 \begin{figure}[htp]
   \centering
   \begin{subfigure}[t]{0.49\textwidth}
-    \includegraphics[width=\textwidth]{wrong_path.png}
+    \includegraphics[width=\textwidth]{wrong_plan.png}
     \caption{}
     \label{fig:wron_plan}
   \end{subfigure}
   \begin{subfigure}[t]{0.49\textwidth}
-    \includegraphics[width=\textwidth]{wrong_joint_config.png}
+    \includegraphics[width=\textwidth]{good_plan.png}
     \caption{}
     \label{fig:wrong_joint}
   \end{subfigure}
 
-  \caption{Prepare figures for wrong plan (a) and joint configuration (b)}
+  \caption{When planning a small movement (10cm up) with KDL, motion plan (a) was produced; planning the same movement with TRAC-IK solver produced (b). The solid gray arm is the start state, the orange arm the goal state, with the intermediate planned states in semi-transpareng gray}
   \label{fig:wrong_planning}
 \end{figure}
 
-This is caused by the KDL implementation. KDL finds the IK solution by iterating
-
-\TODO{Should the algorithm be here? Exclude it completely?}
-\begin{algorithm}[ht]
-\begin{algorithmic}
-  \State \textbf{Input:} \(\vec p \gets\) desired target Cartesian pose
-  \vspace{1em}
-
-  \State \(\vec q \gets\) seed joint values
- 
-  \Do
-    \State \(\vec p_c \gets\) computeFK(\(\vec q\))
-    \State \(\mat J \gets\) computeJacobian(\(\vec q\))
-    \State \(\vec e \gets \vec p_c - \vec p\)
-
-    \State \(\vec q \gets \vec q + \mat J^+ \vec e \)
-  \doWhile{\(|e|<\epsilon\)}
-
-  \vspace{1em}
-  \State \textbf{return} \(\vec q\)
-\end{algorithmic}
-\caption{KDL iterative IK solver}
-\label{alg:kdlik}
-\end{algorithm}
-
-This approach is analogic to using the Newton method to minimize the Cartesian space error. The Jacobian matrix \(\mat J = (m_{i,j}) \in \R^{6 \times 6} \) is a matrix of partial derivatives where
-\[
-m_{i,j} = \frac{\pdiff{p_i}}{\pdiff q_j}
-\label{eq:jacob}
-\]
-\marginpar{\TODO{revise \(i,j\)}}
-and thus
-\[
-\mat J_{i,j}^{-1} = \frac{\pdiff{q_j}}{\pdiff p_i}.
-\]
-and by iteration in Algorithm~\ref{alg:kdlik} we descend the pose error by preforming its local linear approximation and taking a step that minimizes it. The pseudoinverse is used in KDL because \quot{it is more efficient to compute}{tracik}, while it is numerically more stable when computed via SVD decomposition.
+This is caused by the KDL implementation. KDL finds the IK solution by iteratively descending the pose error by preforming its local linear approximation\cite{tracik}  and taking a step that minimizes it, analogic to the Newton method. The descent is performed by the inverse Jacobian method, but Moore-Penrose pseudoinverse is used in KDL because \quot{it is more efficient to compute}{tracik}, while it is numerically more stable when computed via SVD decomposition.
 
 The descent can get trapped in local minima when some of the joints limits are reached. This is solved by restarting the search from a random seed position. Then, the found position can be one very distant from the original position in joint space.
 
@@ -180,38 +163,35 @@ This issue is tackled by a new IK solver released recently, TRAC-IK \cite{tracik
 This setting allows us to eliminate the large joint space changes for minor movements, which was an issue with the JACO arm before. \TODO{It still happens, sometimes. Increase time?}
 
 \subsection{Motion planning}
-\label{subsec:moveit_motion_planning}
+\label{subsec:motion_planning}
 
-Planning the motion of the manipulator in an environment with obstacles is a very complex task, suffering heavily from the curse of dimensionality. We are planning in 6-dimensional control space, (joint velocities, accelerations or torques) from a given start pose to the target pose. Search-based planning algorithms fail because of the high dimension of the planning space, augmented by the need of fine space discretisation to keep the path smooth in the continuous real world. Specialized planners based on sampling the control space (Rapidly-exploring Random trees -- \emph{RRT} or Kinodynamic Interior-Exterior Cell Exploration -- \emph{KPIECE}) \TODO{cite} are used to make planning the movement faster.
-RRT build a tree that covers the configuration space. It starts as a single node, the start state. In each step of the expansion, a node \m n is randomly chosen from the tree, with bias towards nodes that are in sparsely covered parts of the space (measured as number of nodes in a hypersphere with a given radius around each node). Then, a control input \m c is randomly sampled and a new node is created for the configuration reached from node \m n by applying the control input \m c for some time \(\Delta t\).
+Planning the motion of the manipulator in an environment with obstacles is a very complex task, suffering heavily from the curse of dimensionality. We are planning in 6-dimensional joint space from a given start pose to the target pose. Search-based planning algorithms fail because of the high dimension of the planning space, augmented by the need of fine space discretisation to keep the path smooth in the continuous real world.
 
-\TODO{KPIECE}
+Specialized planners based on sampling (Rapidly-exploring Random trees -- \emph{RRT} \cite{rrt}  or Kinodynamic Interior-Exterior Cell Exploration -- \emph{KPIECE}) are used to make planning the movement faster. The planners set constraints for the movement, like joint angle and velicity limits, collision checks etc. MoveIt has a plug-in interface to motion planning libraries, the default being OMPL \cite{ompl}, which implements a wide variety of algorithms, including the two mentioned here.
 
-\TODO{post-processing}
+% RRT build a tree that covers the configuration space. It starts as a single node, the start state. In each step of the expansion, a new configuration \m c is randomly sampled from the configuration space. Then, the node \m n nearest to \m c already in the tree is found, and the tree is expanded from \m n to a new node \m m in direction to \m c, while the movement from \m n to \m m must be entirely collision-free and within the constraints limiting e.g. the velocity. The expansion towards unexplored space drives very rapid exploration of the whole configuration space.
+
+% KPIECE projects the configuration space into a grid, and then 
+
+When a motion plan, a series of configurations from the start to the end, is computed, it is usually unnecessarily complicated, performing redundant movements. To smooth the trajectory out, the plan is simplified by a process in which states that are unnecessary, which means the path from their parent state to their child state satisfies the constraints as well, are removed. It is not unusual for a raw plan of movement of tens of centimeters to contain about two hundred states, which are later all removed, because the straight trajectory from the first to the second state is satisfactory.
 
 \subsection{Moving the arm without planning}
-\label{subsec:label}
+\label{subsec:no_plan}
 
-The problem with motion planning is that it is a complex task in itself, and, even though it is readily available as a part of MoveIt, it is slow and sometimes yields bad plans, even after employing the optimizing IK solver TRAC-IK. In case of small movements, where a trivial linear path is often a good enough, if not optimal, solution, computing the whole huge motion plan is plain waste of resources and time.
+The problem with motion planning is that it is a complex task in itself, and, even though it is readily available as a part of MoveIt, it is slow and sometimes yields bad plans, even after employing the optimizing IK solver TRAC-IK\footnote{based on simple experiments not mentioned in this thesis, which consisted of simply moving the arm around with the motion planner}. In case of small movements, where a trivial linear path is often a good enough, if not optimal, solution, computing the whole huge motion plan is plain waste of resources and time.
 
-The previous work \cite{vojta} used motion planning to carry out a simple downward motion, moving in 1\,cm steps. The same unneccesarily long paths have been reported.
+The previous work \cite{vojta} used motion planning to carry out a simple downward motion, moving in 1\,cm steps. The same unnecessarily long paths have been reported.
 
-It is not necessary to move the arm by following a motion plan. The algebraic model of a robotic arm, referred to as serial manipulator, allows us to convert movement from the cartesian space we (and the robot) percieve to the manipulator's joint space. As we mentioned above, when the manipulator is in joint configuration \(\vec q\) reaching end effector pose \(\vec p\) we can compute the Jacobian matrix of partial derivatives
+It is not necessary to move the arm by following a motion plan. As we mentioned above, the Jacobian maps joint velocities \(\dot{\vec{q}}\) to Cartesian twist \(\vec{v}\)
 \[
-\mat J(\vec q) = (j_{i,j})= \frac{\pdiff{p_i}}{\pdiff q_j}.
-\label{eq:jacob}
+\mat J(\vec q) \dot{\vec{q}} = \vec v.
+\]
+Conversely, the Jacobian inverse (if it exists) maps Cartesian twist to joint speeds:
+\[
+\mat J^{-1}(\vec q) \vec v = \dot{\vec{q}}
 \]
 
-With a slight abuse of notation, we can relate the former formula to the formula connecting joint and cantesian space
-\[
-\mat J(\vec q) \dot{\vec{q}} = \dot{\vec{p}}
-\]
-where we see that the Jacobian maps joint velocities \(\dot{\vec{q}}\) to cartesian pose velocities \(\dot{\vec{p}}\) (referred to in literature as \emph{twist}). Conversely, the Jacobian inverse (if it exists) maps cartesian speeds to joint speeds:
-\[
-\mat J^{-1}(\vec q) \dot{\vec{p}} = \dot{\vec{q}}
-\]
-
-The inverse does not need to exist, or can be highly unstable as the Jacobian can be badly numerically conditioned. The near singularity of the Jacobian means that any of the null space of joint speeds would cause end effector movement in the desired direction. Or that the end of the end effector cannot be moved in the desired direction without requiring infinite speeds of the joints. In the second case, we need to leave tehe singularity in another direction.
+The inverse does not need to exist, or can be highly unstable as the Jacobian can be badly numerically conditioned. The near singularity of the Jacobian means that any of the null space of joint speeds would cause end effector movement in the desired direction. Or that the end of the end effector cannot be moved in the desired direction without requiring infinite speeds of the joints. In the second case, we need to leave the singularity in another direction.
 
 In the first case, the problem is underconstrainted and can be solved for least square norm solution, which means the slowest joint motion. With advantage we use the Moore-Penrose pseudoinverse expressed in SVD decomposition of \(\mat J = \mat U \mat S \mat V^T \):
 \[
@@ -222,7 +202,7 @@ This approach gives us opportunity to check the conditioning of the operation, i
  \dot{\vec{q}} = \mat J^\dagger(\vec q) \dot{\vec{p}}
 \]
 
-This whole process of obtaining joint velocities for a given twist is already implemented in MoveIt. The method is a part of RobotState, a class representing the joint configuration of the manipulator. Given the twist, the method computes the joint angulad velocities that result in the given twist in that joint configuration. The velocity is then applied only for a small amount of time in a control loop; in each iteration, the current state is obtained and the joint velocities corresponding to the twist are updated.
+We can then drive the robot along a trajectory with known speeds without expensive motion planning. A very simple example can be simple linear trajectories, where the cartesian velocity part of the twist is constant, and the angular part is zero.
 
 %%%
 \section{Tactile sensing}
@@ -235,7 +215,6 @@ To improve exploration efficiency, we used a 3D force sensor to detect whether o
 \label{subsec:opto}
 
 The force sensor used is an Optoforce OMD-20-SE-40N sensor. Optoforce sensors represent a novel approach to 3D force sensor construction, as their working principle enables them to be made very rugged, resilient.
-
 
 \begin{figure}[ht]
   \begin{subfigure}[t]{0.4\textwidth}
@@ -251,14 +230,13 @@ The force sensor used is an Optoforce OMD-20-SE-40N sensor. Optoforce sensors re
 
   \caption[Optoforce sensor]{The optoforce sensor reference frame (a) and cross-section (b). Taken from \cite{opto_whitep}}
   \label{fig:decomps}
-\end{figure}\
-
+\end{figure}
 
 The Optoforce sensor, seen in cross-section in Figure~\ref{fig:omd_xsec}, consists of an aliminium base plate, made in different designs, and a hollow silicone hemispherical dome. The interior of the dome is coated with a reflective layer. A light emitter, IR LED, is positioned on the base plate in the center of the dome. Four light-sensitive diodes are placed around it.
 
-When the sensor is operational, the LED emits light which bounces around the dome and provides known, constant illumination on the photodiodes. When force is applied to the dome, it deforms, and the deformation causes the illumination of the diodes to shift. From this shift, it is possible to determine the direction in which the force has been applied. According to the manufacturer, deformations in range of hundreds of nanometers can be measured \cite{opto_whitep}.
+When the sensor is operational, the LED emits light which bounces around the dome and provides known, constant illumination on the photodiodes. When force is applied to the dome, it deforms, and the deformation causes the illumination of the diodes to shift. From this shift, it is possible to determine the direction in which the force has been applied. According to the manufacturer, deformations in range of hundreds of nanometers can be measured \cite{opto_whitep}. After some time in operation, the sensor occasionaly gets confused and reports rather large false forces (up to 10N on z axis). A strong compression of the dome resets the sensor to correct readings.
 
-The sensor has its own DAQ (\emph{Data AcQuisition}) module, which communicates with a computer via a serial link emulated over USB. The manufacturer provides a C++ library that exposes the sensor functionality in an API. It however depends on the problematic Qt framework. Shadow Robot Company \cite{opto_driver}  implemented a ROS node that connects to the sensor serial interface, configures sensor parameters like measurement and filter frequency, reads the data output by the sensor and publishes them on a ROS topic to be processed by other components. The readings published are in Newtons, as the driver is provided with a \uvz{sensitivity report}, a calibration result provided by the manufacturer that relates the internal units used bu the sensor to actual physical forces. The driver software was released under GPLv2. We simplified the driver and slightly adjusted it to work better in our setup.
+The sensor has its own DAQ (\emph{Data AcQuisition}) module, which communicates with a computer via a serial link emulated over USB. The manufacturer provides a C++ library that exposes the sensor functionality in an API. It however depends on the problematic Qt framework. Shadow Robot Company \cite{opto_driver}  implemented a ROS node that connects to the sensor serial interface, configures sensor parameters like measurement and filter frequency, reads the data output by the sensor and publishes them on a ROS topic to be processed by other components. The readings published are in Newtons, as the driver is provided with a \uvz{sensitivity report}, a calibration result provided by the manufacturer that relates the internal units used by the sensor to actual physical forces. The driver software was released under GPLv2. We simplified the driver and slightly adjusted it to work better in our setup.
 
 
 \section{Contributions to the hardware and framework}
@@ -267,9 +245,11 @@ The sensor has its own DAQ (\emph{Data AcQuisition}) module, which communicates 
 \subsection{Arm simulator}
 \label{subsec:arm_sim}
 
-To simplify development, we implemented a fake arm driver mimicking the Kinova ROS driver. The fake driver is meant to be used with MoveIt! as a drop-in replacement of the original driver, and hence it only implements FollowJointTrajectory action. It receives a joint speed trajectory, and replays it, publishing fake arm configuration to the respective topic where the rest of the system expects robot joint readings. Then, the rest of the system cannot distinguish the fake arm and the real robot.
+To simplify development, we implemented a mock arm driver mimicking the Kinova ROS driver. The mock driver is meant to be used with MoveIt! as a drop-in replacement of the original driver, and hence it only implements FollowJointTrajectory action. It receives a joint speed trajectory, and replays it, publishing mock arm configuration to the respective topic where the rest of the system expects robot joint readings. Then, the rest of the system cannot distinguish the mock arm and the real robot.
 
-The fake driver can be configured to execute the joint trajectories faster, to save time the user spends watching the simulated arm move. The fake driver does not simulate arm dynamics in any way, it only tries to follow the trajectory in the same way as the real driver does. In the end, instead of being driven by a regulator to the real target angles, we set the joint angles directly.
+The mock driver can be configured to execute the joint trajectories faster, to save time the user spends watching the simulated arm move. The mock driver does not simulate arm dynamics in any way, it only tries to follow the trajectory in the same way as the real driver does. In the end, instead of being driven by a regulator to the real target angles, we set the joint angles directly.
+
+The simulator also mimicks the driver's ability to drive the arm by specifying joint speeds. It reads a joint velocity input at 100\,Hz, behaving exactly as the real driver as described in \ref{subsec:api_cart_vel}.
 
 This simulator allows us to test the system without the need of using, driving and taking care of a expensive physical arm.
 
@@ -301,8 +281,8 @@ The sensor is mounted in a frame together with a stick. The stick ends at the se
 
 \begin{figure}[htp]
   \centering
-  \includegraphics[width=7cm]{sensing_toool_photo.png}
-  \caption{The sensing tool}
+  \includegraphics[width=8cm]{jaco_base.png}
+  \caption[Sensing tool]{The sensing tool held in the JACO arm's gripper}
   \label{fig:tool_photo} 
 \end{figure}
 
@@ -315,10 +295,13 @@ The whole assembly is mounted to a lump of plastic ergonomically designed for th
 \begin{figure}[ht]
   \centering
   \includegraphics[width=7cm]{lump.png}
-  \caption{The ergonomical grip handle we designed to facilitate mounting hardware onto the arm. The square base can be used to mount any object to the handle in the future. The 3-finger gripper on the arm can hold it firmly enough to withstand considerable force}
+  \caption[Tool grip handle]{The ergonomic grip handle we designed to facilitate mounting hardware onto the arm. The square base can be used to mount any object to the handle in the future. The 3-finger gripper on the arm can hold it firmly enough to withstand considerable force}
   \label{fig:label}
 \end{figure}
 
+The sensor is connected to the DAQ and then the computer through external cables. This limits the arm, as for example a full joint rotation would wind the cable around a link. For this reason, we left the cable free from the arm and used it only when the experiment needed it. In the arm, a builtin pass-through cable is available, which would eliminate the external cable and allow us to fully use the arm. We however do not have the means to use the cable to transfer sensor data, although we hope it will be possible in the future.
+
+The measurements from the sensor are processed by other components of the system. By observing the data obtained by hte sensor during random movement of the arm (no contact with the stick), the gravitational force of the stick itself, combined with vibrations, can cause lateral forces of up to 1\,N. We recommend to detect contact by thresholding the contact force by 2\,N for the lateral forces and 4\,N for axial forces.
 
 \end{document}
 

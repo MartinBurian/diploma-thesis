@@ -139,6 +139,9 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \newcommand*{\half}{^1\!/_{\!2}}
 \newcommand*{\difrac}[2]{^{#1\!}/_{\!#2}}
 \newcommand*{\R}{I\!\!R}
+\newcommand*\colvec[3][]{
+    \begin{pmatrix}\ifx\relax#1\relax\else#1\\\fi#2\\#3\end{pmatrix}
+}
 
 \newcounter{todo}
 \newcommand{\TODO}[1]{\refstepcounter{todo}%

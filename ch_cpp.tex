@@ -28,7 +28,7 @@ In our case, time is a scarce resource and we need to cover the whole area in th
 
 \subsection{Heuristic methods}
 \label{subsec:heuritic}
-Next in line with simplicity are heuristic strategies. \cite{rt_heuristic_coverage} describes several such strategies. All of them are used in grid map representation.
+Next in line with simplicity are heuristic strategies. Conference paper \cite{rt_heuristic_coverage} describes several such strategies. All of them are used in grid map representation.
 
 The simplest strategy is closest-first, which randomly chooses an uncovered field adjacent to the current one; if none such exists, a BFS is performed to find the closest uncovered field and navigates to it.
 
@@ -40,7 +40,7 @@ Heuristic strategies do not provide any optimality guarantees, and can perform v
 
 \subsection{Exact cellular decomposition}
 \label{subsec:boustrop}
-When the environment is known and can be represented, or at least approximated, by polygons or differential functions, exact cellular decomposition approaches can be used. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}, an example of which can be seen in Figure~\ref{fig:zig_pattern}. The traversal order is where the complexity is hidden in this technique.
+When the environment is known and can be represented, or at least approximated, by polygons or differentiable functions, exact cellular decomposition approaches can be used \cite{survey13}. This family of approaches performs a decomposition of the workspace with obstacles into distinct cells. The cells are then traversed and each is covered by a trivial zig-zag pattern, sometimes called the \textit{boustrophedon pattern}, an example of which can be seen in Figure~\ref{fig:zig_pattern}. The traversal order is where the complexity is hidden in this technique.
 
 \begin{figure}[ht]
   \centering
@@ -129,7 +129,7 @@ The heuristic is also closely connected to the well-known heuristic for the knig
 
 \section{Generalization to 3D}
 
-The exact methods presented rely on some of the properties of 2-dimensional space, such as that there is only \uvz{above} and \uvz{below} an obstacle, but there is no \uvz{behind}. This makes their direct generalization to 3D impossible. Most effort in 3D coverage has been put into covering 2D surfaces in 3D space, such as car parts (that need to be covered in paint) or more complex terrain on crop fields (that need to be covered by harvesting machines). We however actually need to cover all the cells in a 3D environment.
+The exact methods presented rely on some of the properties of 2-dimensional space, such as that there is only \uvz{above} and \uvz{below} an obstacle, but there is no \uvz{behind} \TODO{REDO}. This makes their direct generalization to 3D impossible. Most effort in 3D coverage has been put into covering 2D surfaces in 3D space, such as car parts (that need to be covered in paint) or more complex terrain on crop fields (that need to be covered by harvesting machines). We however actually need to cover all the cells in a 3D environment.
 
 In our case, the exploration also needs to take into account the kinematic constraints on the arm pose, as we must not allow any part of the arm except the contact sensor to enter unknown areas to prevent possible hardware damage.
 
@@ -137,7 +137,7 @@ Any planar covering algorithm can be extended to 3D by being applied sequentiall
 
 In a continuous case, we divide the workspace along one dimension into a collection of planes spaced in intervals corresponding to the robot's sensing diameter. This way, when the robot completely covers two consecutive planes, the space in between them will have been covered as well.
 
-When we represent the environment in a grid, we simply choose to use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm.
+When we represent the environment in a grid, we generally choose to use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm.
 
 \section{Method comparison}
 \label{sec:cpp_comp}
