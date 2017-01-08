@@ -35,7 +35,7 @@
 	specification-file = {zadani.pdf},
 	front-specification = true,
 %	front-list-of-figures = false,
-%	front-list-of-tables = false,
+	front-list-of-tables = false,
 %	monochrome = true,
 %	layout-short = true,ded. One way to do is with a \makebox command (6). This is the LaTeX code produce made by the above 
 }
@@ -142,6 +142,12 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \newcommand*\colvec[3][]{
     \begin{pmatrix}\ifx\relax#1\relax\else#1\\\fi#2\\#3\end{pmatrix}
 }
+\newcommand*{\dvec}[1]{\dot{\vec{#1}}}
+
+\definecolor{code-gray}{gray}{0.95}
+\newcommand{\code}[1]{\colorbox{code-gray}{\texttt{\detokenize{#1}}}}
+
+
 
 \newcounter{todo}
 \newcommand{\TODO}[1]{\refstepcounter{todo}%
@@ -194,8 +200,7 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \subfile{ch_experiments}
 
 
-
-\chapter{Conclusion}
+\subfile{ch_conclusion}
 
 % \begin{table}
 % \begin{ctucolortab}
@@ -214,10 +219,11 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \bibliographystyle{unsrt}
 \bibliography{buriama8_dp}
 
+\end{document}
+
 
 %\ctutemplate{specification.as.chapter}
 
-\end{document}
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t

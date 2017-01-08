@@ -3,6 +3,8 @@
 
 \chapter{Algorithm choices}
 
+\TODO{Change name}
+
 The robot is to explore the environment in front of it, and to record its findings in a map. The map needs to be represented in such way that it can be used both in further exploration, to prevent the arm from hitting obstacles, and to further operate the robot, e.g. decide if it is possible to move forward. We also need to find a framework in which we will formulate and solve the problem of guiding the robot through the whole environment. And the decision needs to be made on how to drive the arm.
 
 \section{Map representation}
@@ -48,11 +50,6 @@ As finding an optimal path is highly complex, we considered solving the task wit
 The problem of traversing the whole environment is not uncommon and arises in various applications. The problem is referred to as Coverage Path Planning (\emph{CPP}) problem, and is aimed to be solved by clever algorithms that solve the highly complex planning problem in reasonable time by hiding some of the complexity in heuristic solutions. The algorithms can be generalized to a 3D world. The CPP is elaborated upon in Chapter~\ref{chap:cpp}.
 
 Considering all the methods we presented above, we decided to solve the problem by Coverage path planning. It provides tractable, relatively simple solution to the problem of exploring the environment.
-
-\section{Arm control mechanism}
-\label{sec:label}
-
-\TODO{Ano? Ne?}
 
 \end{document}
 

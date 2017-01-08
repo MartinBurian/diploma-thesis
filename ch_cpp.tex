@@ -51,7 +51,7 @@ When the environment is known and can be represented, or at least approximated, 
 
 The two commonly used decomposition techniques are trapezoid decomposition and boustrophedon decomposition. Both decompositions work with the assumption that no two critical points\footnote{see \cite{optimalcoverage} for definition of critical points} share the same \(x\) coordinate.
 
-Trapezoid decomposition is usually used to index point location in planar decomposition. \TODO{cite?} Here, only the exterior of obstacle polygons is decomposed. Then an adjacency graph of the cells is created and a path through the graph is computed, visiting every cell (vertex) at least once. As the path is followed, each cell is covered by the zig-zag pattern, and then the robot moves to the next cell.
+Trapezoid decomposition is usually used to index point location in planar decomposition. Here, only the exterior of obstacle polygons is decomposed. Then an adjacency graph of the cells is created and a path through the graph is computed, visiting every cell (vertex) at least once. As the path is followed, each cell is covered by the zig-zag pattern, and then the robot moves to the next cell.
 
 The trapezoidal decomposition typically generates many adjacent cells that could be merged and still traversed trivially, but more efficiently, because less border areas will need to be handled. The boustrophedon decomposition is similar to the trapezoidal, only certain cells are merged together, eliminating suboptimal coverage of their boundaries. Examples of the two decompositions are presented in Figure~\ref{fig:decomps}.
 
@@ -74,7 +74,7 @@ The trapezoidal decomposition typically generates many adjacent cells that could
 This class of methods is best for perfectly known environments, which is not our case. We mention it to show how exact solutions in known environments can work.
 
 \def\CCr{CC\textsubscript{r} }
-A method for coverage of unknown rectilinear environments with a contact sensor called \CCr  (Continuous Coverage of Rectilinear environments) has been described in \cite{ccrpaper}. It builds on the fact that while the traditional decompositions explicitly forbid rectilinear environments, they are easy to decompose themselves as all the cells in the decompositions will be rectangles. \CCr builds the decomposition gradually while exploring the environment. The authors give a proof of completeness in \cite{ccrpaper}, but no statement on the optimality of the algorithm is given. The requirement of rectilinear envitonment is however very strong.
+A method for coverage of unknown rectilinear environments with a contact sensor called \CCr  (Continuous Coverage of Rectilinear environments) has been described in \cite{ccrpaper}. It builds on the fact that while the traditional decompositions explicitly forbid rectilinear environments, as the critical points there do share the same \(x\) coordinate, they are easy to decompose themselves as all the cells in the decompositions will be rectangles. \CCr builds the decomposition gradually while exploring the environment. The authors give a proof of completeness in \cite{ccrpaper}, but no statement on the optimality of the algorithm is given. The requirement of rectilinear envitonment is however very strong.
 
 
 \subsection{Grid neural network}
@@ -99,8 +99,8 @@ The great advantage of this method is in its ability to represent and cope with 
 
 The closest-first heuristic is the obvious trivial heuristic for the CPP. It only needs to make a reasonable guess on where to go next. 
 
-We designed a simple rule the robot follows. We define the heuristic function \(f\) on cell \m x as 
-\[
+We designed a simple rule the robot follows. We define the heuristic function \(f\) on cell \m x, which has a set of neighbouring cells \(N_x\), as 
+\begin{equation}
 f(x)= \left\{
     \begin{array}{l}
       |\{i \in N_x | i \textit{ has been explored}\}| + |\{j \in N_x | j \textit{ is a known obstacle}\}| \\
@@ -108,11 +108,12 @@ f(x)= \left\{
       0 \quad \textrm{ otherwise.}
     \end{array}
     \right.
-\]
+    \label{eq:heuristic}
+\end{equation}
 The robot in cell \(c\) goes to the unvisited cell
 \[n = \argmax_{j \in N_c} f(j).\]
 
-In case of a tie between candidates \(\textit{PN}_c\), the robot breaks it by looking at their neighboring cells and choosing candidate
+In case of a tie between candidates \(\textit{PN}_c\), the robot tries to decide it by looking at their neighboring cells and choosing candidate
 \[
 n = \argmax_{j \in \textit{PN}_c} \sum_{k \in N_j} f(k).
 \]
@@ -122,14 +123,11 @@ If all the neighboring cells have been visited, the robot goes to the nearest un
 
 This heuristic makes sense from multiple points of view. For one, it encodes the common-sense ideas about how to explore an unknown area. We would like to keep the already explored space as compact as possible, to eliminate future need to come back to inspect a few unexplored fields left behind, thus maximizing the number of already visited neighbors of the next cell. The second term encodes the idea that cells next to an obstacle have a higher probability of being obstacles as well, and it is benefitial to explore them sooner to get this knowledge as early as possible and to be able to exploit it.
 
-The heuristic is also closely connected to the well-known heuristic for the knight's tour (or any other Hamiltonian path) problem. We would like to get a Hamiltonian path, as it would minimize revisited cells and thus path length. The original Warnsdorff's heuristic tells us to \uvz{select the move which connects with the fewest number of further moves}. Pohl's heuristic \cite{knight_heuristic}, based on Warnsdorff's, adds a tie-breaking rule, applying the idea recursively: choose the field whose neighboring fields have the fewest ways to continue. Our heuristic follows this rule exactly: maximizing the number of already explored neighbors is equivalent to minimizing the number of possible next moves.
-
-\TODO{handling edge cells}
-
+The heuristic is also closely connected to the well-known heuristic for the knight's tour (or any other Hamiltonian path) problem. We would like to get a Hamiltonian path, as it would minimize revisited cells and thus path length. The original Warnsdorff's heuristic tells us to \quot{select the move which connects with the fewest number of further moves}{knight_heuristic}. Pohl's heuristic, based on Warnsdorff's, only adds a tie-breaking rule, applying the idea recursively: \quot{choose the field whose neighboring fields have the fewest ways to continue}{knight_heuristic}. Our heuristic follows this rule exactly: maximizing the number of already explored neighbors is equivalent to minimizing the number of possible next moves. The only difference is that the aforementioned heuristics prioritize cell on the edges and corners of the environment, as they have intrinsically less neighbors, while our heuristic takes them as ordinary cells.
 
 \section{Generalization to 3D}
 
-The exact methods presented rely on some of the properties of 2-dimensional space, such as that there is only \uvz{above} and \uvz{below} an obstacle, but there is no \uvz{behind} \TODO{REDO}. This makes their direct generalization to 3D impossible. Most effort in 3D coverage has been put into covering 2D surfaces in 3D space, such as car parts (that need to be covered in paint) or more complex terrain on crop fields (that need to be covered by harvesting machines). We however actually need to cover all the cells in a 3D environment.
+While the grid-based methods presented above can directly be generalized to 3D by applying them to a 3D grid instead of 2D, the exact methods presented rely on cellular decompositions that are relatively easy to compute in 2D but complex in 3D. This makes their direct generalization to 3D impractical. Most effort in 3D coverage has been put into covering 2D surfaces in 3D space, such as car parts (that need to be covered in paint) or more complex terrain on crop fields (that need to be covered by harvesting machines). We however actually need to cover all the cells in a 3D environment.
 
 In our case, the exploration also needs to take into account the kinematic constraints on the arm pose, as we must not allow any part of the arm except the contact sensor to enter unknown areas to prevent possible hardware damage.
 
@@ -137,7 +135,7 @@ Any planar covering algorithm can be extended to 3D by being applied sequentiall
 
 In a continuous case, we divide the workspace along one dimension into a collection of planes spaced in intervals corresponding to the robot's sensing diameter. This way, when the robot completely covers two consecutive planes, the space in between them will have been covered as well.
 
-When we represent the environment in a grid, we generally choose to use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm.
+When we represent the environment in a grid, we generally choose to use one dimension of the grid, and then cover each layer of the dimension with a planar grid algorithm. In the case of our exploration task, we choose to divide the grid into vertical slices (perpendicular to the arm when it reaches forward), each of which the robot searches in turn, progressing from the closest to the furthest of the planes. This sequence of planes leaves the space between the robot and the currently explored cell known, as it has been searched before. This simplifies reasoning about the environment in which the robot moves and works.
 
 \section{Method comparison}
 \label{sec:cpp_comp}

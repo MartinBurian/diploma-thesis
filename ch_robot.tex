@@ -10,6 +10,8 @@ The arm (and the whole TRADR robot) run under the \emph{Robot Operating System} 
 
 The ROS framework is only a common interface specification, with the actual implementation of a node completely independent on other nodes. Each node can be implemented in a different programming language, as long as they conform with the communication standards.
 
+Nodes run in event loops, referred to as \emph{spinning}. In each loop iteration, an event is taken from the incoming event queue and the appropriate callback is issued.
+
 \subsection{ROS primitives}
 \label{subsec:ros_prims}
 
@@ -33,7 +35,14 @@ A good example for an action server is one for driving the robot to a defined po
 \label{sec:jaco}
 We will be working with the Kinova JACO robotic arm. It is a 6 degrees of freedom lightweight robotic arm, designed by Kinova Robotics for use in assistive and collaborative applications. Originally designed to be used in assistive robotics, mounted on mobile structures as wheelchairs, JACO's lightness makes it ideal for uses on mobile robots \cite{kinova}.
 
-\TODO{JACO image}
+\begin{figure}[ht]
+  \centering
+  \hspace{1cm}\includegraphics[width=4cm]{jaco.jpg}
+  \caption{The Kinova JACO 6DOF robotic arm with the 3-finger gripper. Photo taken from \cite{kinova}}
+  \label{fig:jaco}
+\end{figure}
+
+
 
 \subsection{Serial manipulator}
 \label{subsec:arm_theory}
@@ -67,7 +76,7 @@ Instead, the wrist consists of three revolute joints that have angular offsets o
   \label{fig:jaco_schema}
 \end{figure}
 
-The arm manufacturer states the reach of the arm is 90\,cm. The arm can actually reach beyond 100\,cm, but only with limited rotation. In the 90\,cm work range, a large range of hand orientations is still possible.
+The arm manufacturer states the reach of the arm is 90\,cm. The arm (including the gripper) can actually reach beyond 100\,cm, but only with limited rotation. In the 90\,cm work range, a wide range of hand orientations is still possible. On the other side, the arm cannot reach all orientations if the end effector is close to the base. We observed that to reach closer than 40\,cm and point the gripper away from the base, the arm needs to be in extreme poses, which are better avoided as they bring the arm close to self-collision.
 
 \subsection{Kinova ROS driver}
 \label{subsec:kinova_ros}
@@ -97,7 +106,7 @@ The stop service stops all movements of the arm immediately. To resume operation
 \section{MoveIt!}
 \label{sec:moveit}
 
-The ROS framework was primarily designed to operate whole mobile robots; it is not so well suited to control robotic manipulators. To help in this area, the MoveIt! package was designed to facilitate this task. It encompasses the full stack necessary to operate a robotic arm, from managing the state of the scene, through manipulation, motion planning, collision-checking, IK solving to outputting commands that can be used directly to control a manipulator.
+The ROS framework was primarily designed to operate whole mobile robots; it is not so well suited to control robotic manipulators. To help in this area, the MoveIt! package \cite{moveit_docs} was designed to facilitate this task. It encompasses the full stack necessary to operate a robotic arm, from managing the state of the scene, through manipulation, motion planning, collision-checking, IK solving to outputting commands that can be used directly to control a manipulator.
 
 \subsection{MoveIt! architecture}
 \label{subsec:mvt_arch}
@@ -111,7 +120,7 @@ MoveIt runs a large monolithic node called move group. The move group is respons
   \label{fig:moveit_arch}
 \end{figure}
 
-The central node represents the move\_group, which listens to input from the robot hardware in the lower right, as point cloud sensors and introceptive sensors. It outputs commands to the manipulator to the controller with JointTrajectoryAction interface and is controlled by the inputs on the left. MoveIt has a plugin-oriented extensible architecture, where all services like IK solving and motion planning are defined as plugins, interchangable with other implementations.
+The central node represents the move\_group, which listens to input from the robot hardware in the lower right, as point cloud sensors and introceptive sensors. It outputs commands to the manipulator to the controller with \code{JointTrajectoryAction} interface and is controlled by the inputs on the left. MoveIt has a plugin-oriented extensible architecture, where all services like IK solving and motion planning are defined as plugins, interchangable with other implementations.
 
 \subsection{User interface}
 \label{subsec:moveit_ui}
@@ -122,20 +131,20 @@ The user interface, or client libraries, for MoveIt are prepared in C++ and pyth
 \subsection{Robot interface}
 \label{subsec:moveit_ri}
 
-MoveIt interfaces with the robot hardware by an action server implementing the JointTrajectoryAction. The server then drives the arm hardware. The JointTrajectoryAction is specified as a trajectory in space of joint angles and velocities, prepared by the motion planner with respect to both the arm kinematics (preventing collisions) and the arm dynamics (taking limits on joint velocities into account). The trajectory waypoints specify both the desired joint angles, as well as joint velocities necessary to reach the next waypoint. Each waypoint also specifies a point in time in which the arm should have reached it.
+MoveIt interfaces with the robot hardware by an action server implementing the \code{JointTrajectoryAction}. The server then drives the arm hardware. The \code{JointTrajectoryAction} is specified as a trajectory in space of joint angles and velocities, prepared by the motion planner with respect to both the arm kinematics (preventing collisions) and the arm dynamics (taking limits on joint velocities into account). The trajectory waypoints specify both the desired joint angles, as well as joint velocities necessary to reach the next waypoint. Each waypoint also specifies a point in time in which the arm should have reached it.
 
-In case of the Kinova ROS driver, no such server is provided by the manufacturer. A pull request (code contributed by a developer) on GitHub containing this functionality exists, but is not a part of the release yet. We used an implementation of this server by Matěj Balga\TODO{cite}, which we updated to work with the newest drivers from Kinova. The server is rather simplistic. It follows the joint velocities defined in the waypoints, forwarding them to the arm driver for as long as the waypoint specifies.
+In case of the Kinova ROS driver, no such server is provided by the manufacturer. A pull request (code contributed by a developer) on GitHub containing this functionality exists, but is not a part of the release yet. We used an implementation of this server by Matěj Balga \cite{matej} , which we updated to work with the newest drivers from Kinova. The server is rather simplistic. It follows the joint velocities defined in the waypoints, forwarding them to the arm driver for as long as the waypoint specifies.
 
-At the trajectory end, the current arm joint pose is compared to the desired final pose. If they are different, a simple P regulator is used to move the arm joints to within tolerance of the final positions. This behavior is very apparent after following a more complex trajectory, which includes many direction changes. It could prove dangerous for the arm when maneuvering in proximity of obstacles, as the arm strays off the collision-free trajectory. We assume this happens because the driver forwards the velocities to the arm directly, without taking accelerations into account. The arm firmware has acceleration limits built in, and when the limit is applied and the set velocity is truncated, the actual arm position diverges from the position expected by the driver.
+At the trajectory end, the current arm joint pose is compared to the desired final pose. If they are different, a simple P regulator is used to move the arm joints to within tolerance of the final positions. This behavior is very apparent after following a more complex trajectory, which includes many direction changes. It could prove dangerous for the arm when maneuvering in proximity of obstacles, as the arm strays off the collision-free trajectory. The final movement is also very fast, and could damage the arm if anything were to happen. We assume this happens because the driver forwards the velocities to the arm directly, without taking accelerations into account. The arm firmware has acceleration limits built in, and when the limit is applied and the set velocity is truncated, the actual arm position diverges from the position expected by the driver.
 
 The driver could possibly be improved by interpolating the velocities on a spline rather than linearly, smoothing out the velocity changes and thus not letting the arm firmware to interfere with the control.
 
 \subsection{Inverse Kinematics solver -- TRAC-IK}
 \label{subsec:tracik}
 
-During our initial experiments with the arm, we encountered puzzling behaviors of the motion planners. The arm would sometimes move along a seemingly random, unnecessarily long path. At closer investigation, we concluded that the planning was actually optimal, but what was wrong was the Inverse Kinematic (\emph{IK}) solution for the target pose.
+During our initial experiments with the arm, we encountered puzzling behaviors of the motion planners. The arm would sometimes move along a seemingly random, unnecessarily long path. At closer investigation, we concluded that the planning was actually optimal, but what was wrong was the Inverse Kinematic (\emph{IK}) solution for the target pose. Such plan is illustrated in Figure~\ref{fig:wrong_planning}.
 
-Because of the slightly non-standard arm kinematics (see section \ref{subsec:arm_kinematics}), the default IK solver used by MoveIt (the KDL numerical solver) would sometimes produce a solution that indeed reaches the desired end effector pose, but that is very far in joint space from the current joint state, even when a very small end effector motion is required.
+Because of the slightly non-standard arm kinematics (see section \ref{subsec:arm_kinematics}), the default IK solver used by MoveIt (the KDL numerical solver) would sometimes produce a solution that indeed reaches the desired end effector pose, but that is very far in joint space from the current joint state (e.g. the first joint is rotated), even when a very small end effector motion is required.
 
 \begin{figure}[htp]
   \centering
@@ -150,7 +159,7 @@ Because of the slightly non-standard arm kinematics (see section \ref{subsec:arm
     \label{fig:wrong_joint}
   \end{subfigure}
 
-  \caption{When planning a small movement (10cm up) with KDL, motion plan (a) was produced; planning the same movement with TRAC-IK solver produced (b). The solid gray arm is the start state, the orange arm the goal state, with the intermediate planned states in semi-transpareng gray}
+  \caption[Non-optimal motion plan]{When planning a small movement (10cm up) with KDL, motion plan (a) was produced; \REV{change of 1st joint} The solid gray arm is the start state, the orange arm the goal state, with the intermediate planned states in semi-transpareng gray}
   \label{fig:wrong_planning}
 \end{figure}
 
@@ -158,16 +167,35 @@ This is caused by the KDL implementation. KDL finds the IK solution by iterative
 
 The descent can get trapped in local minima when some of the joints limits are reached. This is solved by restarting the search from a random seed position. Then, the found position can be one very distant from the original position in joint space.
 
-This issue is tackled by a new IK solver released recently, TRAC-IK \cite{tracik}. The solver implements another approach to solving the IK problem by formulating it as a Sequential Quadratic Programming problem, minimizing \(|e|^2\) with joint limits as constraints. The solver also allows the user to specify other constraints, like a wish to minimize joint-space distance between the seed (current arm joint values) and the result.
+This issue is tackled by a new IK solver released recently, TRAC-IK \cite{tracik}. The solver implements another approach to solving the IK problem by formulating it as a Sequential Quadratic Programming problem, minimizing cartesian error \(|e|^2\) with joint limits as constraints. The solver also allows the user to specify other constraints, like a wish to minimize joint-space distance between the seed (current arm joint values) and the result.
 
-This setting allows us to eliminate the large joint space changes for minor movements, which was an issue with the JACO arm before. \TODO{It still happens, sometimes. Increase time?}
+This setting allows us to eliminate the large joint space changes for minor movements, which was an issue with the JACO arm before.
+
+A similar issue, which we failed to eliminate in the end, was caused by joint limit settings in the arm. While all the joint actuators allow continuous rotation (limited in software to \(\pm 27.7\) turns \cite{jaco_spec}) and only the second and third are limited by the arm design, when the arm is configured in MoveIt, a limit of \(\pm 1\) turn is imposed on the unlimited joints. The setup guide for TRADR project mentions limiting the joints is crucial to allow efficient planning. While this is true, it also causes artifacts like the path planned in Figure~\ref{fig:wrong_plan_joint}, where as in the previous case a tiny change in configuration needs seemingly unreasonably complex trajectory which is completely justified from the machine point of view, but looks nonsense to an observer.
+
+\begin{figure}[htp]
+  \centering
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{wrong_plan.png}
+    \caption{}
+    \label{fig:wrong_plan_joint}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{good_plan.png}
+    \caption{}
+    \label{fig:good_plan_joint}
+  \end{subfigure}
+
+  \caption[Non-optimal motion plan]{Motion plan affected by limited joints. In (a), the joint limit would be crossed if the arm took the straight path (b), and the IK solver and planner had no other chance than to perform full rotation in the first joint to stay within the limits. Plan (b) was generated after executing the first plan, which moved the arm away from the joint limit. The solid gray arm is the start state, the orange arm the goal state, with the intermediate planned states in semi-transparent gray}
+  \label{fig:wrong_joints}
+\end{figure}
 
 \subsection{Motion planning}
 \label{subsec:motion_planning}
 
 Planning the motion of the manipulator in an environment with obstacles is a very complex task, suffering heavily from the curse of dimensionality. We are planning in 6-dimensional joint space from a given start pose to the target pose. Search-based planning algorithms fail because of the high dimension of the planning space, augmented by the need of fine space discretisation to keep the path smooth in the continuous real world.
 
-Specialized planners based on sampling (Rapidly-exploring Random trees -- \emph{RRT} \cite{rrt}  or Kinodynamic Interior-Exterior Cell Exploration -- \emph{KPIECE}) are used to make planning the movement faster. The planners set constraints for the movement, like joint angle and velicity limits, collision checks etc. MoveIt has a plug-in interface to motion planning libraries, the default being OMPL \cite{ompl}, which implements a wide variety of algorithms, including the two mentioned here.
+Specialized planners based on sampling (Rapidly-exploring Random trees -- \emph{RRT} \cite{rrt}  or Kinodynamic Interior-Exterior Cell Exploration -- \emph{KPIECE}) are used to make planning the movement faster. The planners set constraints for the movement, like joint angle and velicity limits, collision checks etc. MoveIt has a plug-in interface to motion planning libraries, the default being OMPL \cite{ompl}, which implements a wide variety of algorithms, including the two mentioned here. Based on experiments with the arm and recommendations from \cite{vojta} and \cite{ompl}, we used the KPIECE family of planners, namely LBKPIECE, Lazy Bi-directional KPIECE.
 
 % RRT build a tree that covers the configuration space. It starts as a single node, the start state. In each step of the expansion, a new configuration \m c is randomly sampled from the configuration space. Then, the node \m n nearest to \m c already in the tree is found, and the tree is expanded from \m n to a new node \m m in direction to \m c, while the movement from \m n to \m m must be entirely collision-free and within the constraints limiting e.g. the velocity. The expansion towards unexplored space drives very rapid exploration of the whole configuration space.
 
@@ -197,7 +225,7 @@ In the first case, the problem is underconstrainted and can be solved for least 
 \[
 \mat J^\dagger(\vec q) = \mat V \mat S^{-1} \mat U^T
 \]
-This approach gives us opportunity to check the conditioning of the operation, inspecting the singular values and zeroing out those that are below the tolerance and that could cause the solution to fail. The pseudoinverse then gives us the joint velocities directly:
+This approach gives us opportunity to check the conditioning of the operation, inspecting the singular values and zeroing out those that are below some threshold and could cause the solution to fail when inverted in constructing the pseudoinverse. The pseudoinverse then gives us the joint velocities directly:
 \[
  \dot{\vec{q}} = \mat J^\dagger(\vec q) \dot{\vec{p}}
 \]
@@ -281,7 +309,7 @@ The sensor is mounted in a frame together with a stick. The stick ends at the se
 
 \begin{figure}[htp]
   \centering
-  \includegraphics[width=8cm]{jaco_base.png}
+  \hspace{2cm}\includegraphics[width=8cm]{jaco_base.png}
   \caption[Sensing tool]{The sensing tool held in the JACO arm's gripper}
   \label{fig:tool_photo} 
 \end{figure}
