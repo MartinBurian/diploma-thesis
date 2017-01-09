@@ -4,28 +4,30 @@
 
 \chapter{Introduction}
 
-\section{Introduction}
+The goal of the TRADR project \cite{tradr} is to provide rescue workers in urban search and rescue missions in disaster struck areas with intelligent robotic assistance, to increase the efficiency of the operations. \uvz{Various kinds of robots, collaborate with human team members to explore or search the disaster environment}\cite{tradr}, helping the team as a whole to collect as much data as possible. The focus of the project is on the cooperation and fusion of the human and robot elements, resulting in optimal usage of the unique capabilities of each team member.
 
+One of the robot team members is the BlueBotics Absolem robotic platform, developed originally for TRADR's predecessor project NIFTi \cite{nifti}. The robot is designed to be remotely driven by an operator to explore the disaster-struck environment and collect information valuable for further decision-making in the whole rescue operation. The robot moves on articulated tracks, which can be used to adapt the morphology of the robot to optimize traversal of rough, uneven terrain, and is equipped with a range of sensors including omnidirectional and thermal camera and a LIDAR. These instruments are used to construct a model of the environment which the operator of the vehicle uses to drive the robot after its goals.
+
+All of the aforementioned sensors are based on light. In difficult visibility conditions, like dense smoke, fog or dust, the data from the sensors cover only a very limited range around the robot, if they are available at all. Then, driving the robot is unsafe, as the dangers of the environment remain hidden from the operator. Sensors based on other physical phenomena than light, like radar and sonar, can be used in such cases; the robot is however equipped with neither of those. It is, on the other hand, equipped with a Kinova JACO robotic arm that can be used to get a tactile measurement of the terrain height in front of the robot \cite{vojta}, giving the operator at least some information.
+
+Even common things as water puddles can, due to the specular reflection of the laser light, mislead the sensors and appear as a hole in the ground. In \cite{adapt_trave}, the problem of partially unknown environment for controlling the morphology of the robot is solved by learning a policy that can cope with the missing data. The policy can, if it is too unsure if the motion is safe for the robot, request a tactile measurement of terrain elevation in front of the robot. Recently, the individually controllable track segments, \emph{flippers}, on the robot have been equipped with force sensors that detect contact between the track and terrain, giving the robot a means of getting the required data without the hassle of operating the arm.
+
+The mentioned methods can tell the operator if the robot is facing terrain it can traverse. They however cannot inform the operator if any other obstacles are in front of the robot, perhaps including narrow obstacles that would pass between the flippers sensing the ground in front, or overhanging structures that would damage the robot body. Here, the arm mounted on the robot is still irreplaceable.
 
 \section{Exploration task overview}
 \label{sec:label}
 
-Our task is to use a robotic arm to explore space in front of the robot to identify obstacles that could damage it. In the big picture, we need to build a piece of software that will drive the robotic arm hardware around the environment intelligently, not crashing the arm into anything in the process, and via this movement explore the environment in front of the robot. All the while, it will be processing data from a 3D force sensing tool we designed to detect the obstacles. To cover the whole complexity of driving a robotic arm in an environment so that all the environment is explored, we will need to acquaint the reader with the workings of many a field, from robotic manipulators to planning efficient exploring paths.
+Our task is to use a robotic arm to explore space in front of a mobile robotic platform to identify obstacles that could damage it. In the big picture, we need to build a piece of software that will drive the robotic arm hardware around the environment intelligently, not crashing the arm into anything in the process, and via this movement explore the environment in front of the robot. All the while, it will be processing data from a 3D force sensing tool we designed to detect the obstacles. To cover the whole complexity of driving a robotic arm in an environment so that all the environment is explored, we will need to acquaint the reader with the workings of many a field, from robotic manipulators to planning efficient exploring paths. We will be working with the robotic arm alone, without the Absolem robotic platform. When the arm is mounted on the robot, the same software can be used to perform the exploration, only the parameters of the space to be explored must be specified.
 
 The whole system (the robotic platform and the arm) run in the Robot Operating System (\emph{ROS}) framework. To maintain system consistency and simplify implementation, we will be implementing our solution in ROS as well. We provide an overview of the framework in Section~\ref{sec:ros}, where we briefly present the basic concepts to help the reader grasp what is underlying our implementation decisions.
 
-The arm is an advanced piece of hardware and embedded programming, with builtin controls capable of driving the arm in space. The functionality is exposed to the system via a manufacturer-provided driver. We describe both the arm hardware and driver in Section~\ref{sec:jaco} and mention basic theory of robotic manipulators. We also describe the force sensor and its extension we designed for this application. 
+The arm is an advanced piece of hardware and embedded programming, with builtin controls capable of operating the arm. The functionality is exposed to the system via a manufacturer-provided driver. We describe both the arm hardware and driver in Section~\ref{sec:jaco} and mention basic theory of robotic manipulators. We also describe the force sensor and its extension we designed for this application further on in Section~\ref{sec:tactile}. 
 
 Although the driver exposes simple interfaces to control the arm movement, it is necessary to control the arm's motion in context of the whole environment including the robotic platform and any obstacles around the robot. This task is solved by \uvz{MoveIt!}, a library built around functionalities required to use robotic manipulators. We present the library in Section~\ref{sec:moveit}. We also include information about the mathematical and algorithmic framework of robotic manipulators and planning and controlling their motion that is crucial for solving our task.
 
-\section{Outline of the thesis}
-\label{sec:outline}
+Next, in Chapters~\ref{chap:expl} and \ref{chap:cpp}, we present the rationale behind our method choice and the overview of state-of-the-art algorithms for our method of choice, coverage path planning.
 
-First, we will present the hardware used in the exploration task, the Kinova JACO robotic arm and the Optoforce 3D force sensor with our custom extension. We also present the software framework 
-
-Next, we present the overview of state-of-the-art methods of coverage path planning, and the rationale behind our method choice.
-
-Later, we describe the implementation of the algorithm in ROS and experiments with the exploration methods, both simulated and on a real robotic arm.
+Finally, we describe the implementation of the algorithm in ROS and experiments with the exploration methods, both simulated and on a real robotic arm.
 
 
 \end{document}
