@@ -3,33 +3,32 @@
 
 \chapter{Conclusions}
 
-The taks of exploring space with a robotic arm proved to be very complex. From the hardware and the low-level concepts of serial manipulator, through robotic software frameworks with not-so-well functioning libraries, to covering unknown spaces, all levels are critical to complete the task.
+The tasks of exploring space with a robotic arm proved to be very complex. From the hardware and the low-level concepts of serial manipulator, through robotic software frameworks with not-so-well functioning libraries, to covering unknown spaces, all levels are critical to complete the task.
 
 
 \section{Results of our work}
 \label{sec:label}
 
-We designed and buil a tool that extends a force sensor sensing area further away from the arm, while maintaining its sensitivity. The tool is made to be held in the arm's gripper, and can thus be attached to the arm without any tools, even by the robot itself. We also modified the device driver to provide the data we needed. The sensor data are calibrated to the scale in Newtons.
+We designed and built a tool that extends a force sensor sensing area further away from the arm, while maintaining its sensitivity. The tool is made to be held in the arm's gripper, and can thus be attached to the arm without any tools, even by the robot itself. We also modified the device driver to provide the data we needed. The sensor data is calibrated to the scale in Newtons.
 
 The JACO arm was previously used in the TRADR project only in conjunction with motion planning. We developed a control module that can drive the arm along straight trajectories with reasonable precision of about 2\,cm. This mode of control allowed us to speed the whole exploration process up by by-passing the previously necessary, time consuming and computationally expensive motion planning. The controller cannot cope with everything and motion planning is still invaluable for longer motions and motions around arm configurations where the movement cannot be controlled analytically, and over the course of our work, many issues with the planners were identified. Some have been solved, other remain.
 
-We created and tested a Coverage Path Planning algorithm for unknown environemtns, the compact space heuristic algorithm, that guides the arm exploration. Although the algorithm is heuristic in nature, and as such does not give any optimality guarantees, the exploration trajectories it generates are both short and robot friendly. The compactness of explored space maximizes the robot's operation space, simplifying the planning problems. It is also well-suited to be used in conjunction with grid maps and the simple linear motion control.
+We created and tested a Coverage Path Planning algorithm for unknown environments, the compact space heuristic algorithm, that guides the arm exploration. Although the algorithm is heuristic in nature, and as such does not give any optimality guarantees, the exploration trajectories it generates are both short and robot friendly. The compactness of explored space maximizes the robot's operation space, simplifying the planning problems. It is also well-suited to be used in conjunction with grid maps and the simple linear motion control.
 
-All the previously mentioned things were stitched together to create a prototype of the system that could be put to the test. Only wrapping the functionality into an API is needed to make the exploration usable by other system components.
+All the previously mentioned components were stitched together to create a prototype of the system that could be put to the test. The only thing needed to make the exploration usable by other parts of the system is to wrap the functionality into an API .
 
-The performance of the complete solution was verified in both simulation and \TODO{dopiš to}
+The performance of the complete solution was verified in both simulation and real application. The algorithm showed potential to explore the space completely and efficiently, but to achieve that, it lacks an adequate motion planner. The current planners are unable to find motions in close proximity of obstacles, which is crucial for our application. In Section~\ref{sec:propose} below, we propose an approach to take in designing the planner.
+
+As of now, the system can be used in the TRADR system only in limited way, as we cannot rely on motion planning. Once the planning issue is resolved, the rest of the system is ready to be incorporated into the solution, thoroughly tested and used.
 
 \section{Further work proposals}
-\label{sec:label}
+\label{sec:propose}
 
-Some components in the system, namely the \code{FollowJointTrajectoryAction} server, are implemented in such a way that they work, but have issues.
+The further work needed to build a complete, robust solution is mentioned several times. The main issue concerns motion planning, where a new approach is necessary. We propose to base the motion planning algorithm on the fact that we know that the robot will be reaching only to a finite number of locations in the grid, which limits the configuration space considerably, and that the main obstacles are only the collision cubes representing the unexplored cells. This knowledge could help design a simpler algorithm that would not rely on random sampling and achieve a higher success rate.
 
-\begin{enumerate}
-\item improve FollowJointTrajectory
-\item improve joint limits
-\end{enumerate}
+On the lower levels of the system, the \code{FollowJointTrajectory} server needs an update that would improve the path following precision. The finalizing movement of the arm is sudden and fast, and could cause damage to the arm. A different open-source implementation of the server is available as a contribution to Kinova ROS package, but has not been incorporated by the manufacturer as of yet. The question remains if the other solution implements the driver better.
 
-
+The framework also still has issues with the joint limits on the arm. For MoveIt to support continuous joint rotation, deep changes to the library would almost surely be necessary. The robot would however benefit from it greatly, increasing the quality of the generated motions.
 
 \end{document}
 

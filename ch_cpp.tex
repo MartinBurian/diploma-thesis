@@ -1,7 +1,7 @@
 
 \documentclass[buriama8_dp.tex]{subfiles}
 \begin{document}
-\chapter{Coverage path planning}
+\chapter{Coverage Path Planning}
 \label{chap:cpp}
 
 Coverage Path Planning (\textit{CPP}) is \quot{the task of determining a path that passes over all points of an area or volume of interest while avoiding obstacles}{survey13}. The task comes naturally with different robotic applications, where the robot is to complete some task in every point in the environment.
@@ -16,7 +16,7 @@ The first such task that comes to mind is of course cleaning. This sometimes ted
 
 Several different approaches to the problem appeared over time. A typical application takes place in a 2-dimensional, previously known environment. We will introduce several inspiring methods of 2D coverage, and then present a scheme to generalize them to 3D.
 
-The robot moves in a defined workspace, a portion of space where it performs its tasks and which it cannot leave. The environment may be known in advance. In the workspace, there (possibly) are obstacles which the robot needs to avoid not to damage itself.
+The robot moves in a defined workspace, a portion of space where it performs its tasks and which it cannot leave. The environment may be known in advance. In the workspace, there (possibly) are obstacles which the robot needs to avoid in order to not damage itself.
 
 \subsection{Random strategies}
 \label{subsec:random_cpp}
@@ -30,7 +30,7 @@ In our case, time is a scarce resource and we need to cover the whole area in th
 \label{subsec:heuritic}
 Next in line with simplicity are heuristic strategies. Conference paper \cite{rt_heuristic_coverage} describes several such strategies. All of them are used in grid map representation.
 
-The simplest strategy is closest-first, which randomly chooses an uncovered field adjacent to the current one; if none such exists, a BFS is performed to find the closest uncovered field and navigates to it.
+The simplest strategy is closest-first, which randomly chooses an uncovered field adjacent to the current one; if none such exists, a BFS is performed to find the closest uncovered field and the algorithm navigates to it.
 
 To improve the results of the aforementioned heuristic, we augmented it by providing it clues on which field to choose. Our heuristic and the rationale behind it is described below in Section~\ref{sec:my_heuristic}.
 
@@ -150,9 +150,9 @@ In the heuristic methods, the criterion upon which the local decision is based i
 
 In the NN, the global signal propagates through the whole environment and thus the state of the whole map impacts the local decision. No hand-crafted global strategies are necessary. In the end, however, the strategy still boils down to local exploration followed by moving to the globally closest unexplored place when there is nowhere else to go.
 
-The choice of the nearest unclean place is implicit  in the case of neural networks, as the dynamics of the network drive the propagation of activity from unvisited areas such that the signal gets weaker with every step, resulting in the robot going to the closest source of activity via the shortest path when traversing already visited fields.
+The choice of the nearest unexplored place is implicit  in the case of neural networks, as the dynamics of the network drive the propagation of activity from unvisited areas such that the signal gets weaker with every step, resulting in the robot going to the closest source of activity via the shortest path when traversing already visited fields.
 
-The heuristic methods have the choice of the place whence to continue the exploration hand-designed in them. This way, we can design the choice to suit our needs the best.  I our case, this is an advantage, as, because we are working with a robotic arm in three dimensions, we can get to all the fields in our environment directly, without being constrained by planning in a grid with obstacles.
+The heuristic methods have the choice of the place whence to continue the exploration hand-designed in them. This way, we can design the choice to best suit our needs. In our case, this is an advantage, as, because we are working with a robotic arm in three dimensions, we can get to all the fields in our environment directly, without being constrained by planning in a grid with obstacles.
 
 
 

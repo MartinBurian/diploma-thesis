@@ -3,9 +3,9 @@
 
 \chapter{Implementation}
 
-We divide the environment into a grid \(10 \times 10 \times 6\) (width \(\times\) height \(\times\) depth, from the viewpoint of the robot. A cell of the grid is a cube with its side 10\,cm long; the whole grid is positioned in front of the robot and is centered horizontally, the lowest cells are 10\,cm above the robot base and the first layer of the grid is 0.5\,m far from the base. To allow the robot to perform any moves at all, we assume that all space between the robot and the explored space, including the space behind the robot, is known, which is a reasonable assumption, since the mobile robot supposedly came from there and knows the environment. We further assume a static environment is to be explored.
+We divide the environment into a grid \(10 \times 10 \times 6\) (width \(\times\) height \(\times\) depth), from the viewpoint of the robot. A cell of the grid is a cube with its side 10\,cm long; the whole grid is positioned in front of the robot and is centered horizontally, the lowest cells are 10\,cm above the robot base and the first layer of the grid is 0.5\,m far from the base. To allow the robot to perform any moves at all, we assume that all space between the robot and the explored space, including the space behind the robot, is known, which is a reasonable assumption, since the mobile robot supposedly came from there and knows the environment. We further assume a static environment is to be explored.
 
-The robot will move the sensing tool through the grid, following a CPP algorithm. The algorithm aims to minimize the path length in the Cartesian space. Once contact with obstacle is detected by the instrument, the motion will stop, the obstacle is registered in both the mapping algorithm and in the robot driver as a confirmed obstacle. The robot then recovers from the touch and proceeds with the exploration. The robot will always avoid colliding the arm with known obstacles, including the mobile robot it is mounted on. It will also avoid reaching into the unexplored space by other parts than the sensing tool. The sensing tool needs to be included in the collision checking model to avoid obstacles and only allowed to enter the space it is to explore.
+The robot will move the sensing tool through the grid, following a CPP algorithm. The algorithm aims to minimize the path length in the Cartesian space. Once contact with obstacle is detected by the instrument, the motion will stop, the obstacle is registered in both the mapping algorithm and in the robot driver as a confirmed obstacle. The robot then recovers from the touch and proceeds with the exploration. The robot will always avoid colliding the arm with known obstacles, including the mobile robot it is mounted on. It will also avoid reaching into the unexplored space by other parts than the sensing tool. The sensing tool needs to be included in the collision checking model to avoid obstacles and to only be allowed to enter the space it is to explore.
 
 Making the arm move proved more difficult than expected, with motion planning in tight spaces failing frequently. We managed to offload the motion control to the Jacobian controller, but the planned motion is still unstable and sometimes reports perfectly reachable cells as unreachable.
 
@@ -41,11 +41,11 @@ The driver then starts receiving measurements over the serial line, which are de
 
 We mentioned two different ways of driving the arm in Section~\ref{sec:moveit}. As both have their pros and cons, we implemented both of them and tested them to decide which one to use. The experiment testing the implementation is described in Section~\ref{subsec:exp_move_real}.
 
-The control code is implemented in C++ to ensure optimal performance in the critical control code, as well as to leverage the more feature-rich API MoveIt exposes through the C++ module \code{MoveGroupInterface}. A python interface exists as well, but has limited capabilities.
+The control code is implemented in C++ to ensure optimal performance in the critical control loop, as well as to leverage the more feature-rich API that MoveIt exposes through the C++ module \code{MoveGroupInterface}. A python interface exists as well, but has limited capabilities.
 
-Collision checking is performed to prevent arm and tool damage. The unknown space is filled with collision cubes, one for each grid cell. This ensures the arm stays safe. The tool is represented by a collision cylinder the size of the stick attached to the end effector. All collision checks in both motion control methods include the tool so that it does not get damaged. Only when a cell is to be explored, its collision cube is removed to allow the stick to enter it and explore it. A better way to implement it would be to modify the allowed collision matrix to allow collisions only between the stick and the cube, instead of anything and the cube as it is now. MoveIt however suffers heavily from synchronization issues, as the structures live in both the \code{move_group} and the user process, and modifying the collision matrix used in planning appears impossible.
+Collision checking is performed to prevent arm and tool damage. The unknown space is filled with collision cubes, one for each grid cell. This ensures the arm stays safely away from the potential obstacles. The tool is represented by a collision cylinder the size of the stick attached to the end effector. All collision checks in both motion control methods include the tool so that it does not get damaged. Only when a cell is to be explored, its collision cube is removed to allow the stick to enter it and explore it. A better way to implement it would be to modify the allowed collision matrix to allow collisions only between the stick and the cube, instead of anything and the cube as it is now. MoveIt however suffers heavily from synchronization issues, as the structures live in both the \code{move_group} and the user process, and modifying the collision matrix used in planning appears impossible. If an obstacle is detected in the cell, or if all the planning attempts fail, the cube is added back into the environment, and an unreachable cell is reported.
 
-The robot control services are implemented in the main node. They can however be easily separated into standalone units, that can be reused in other projects that require driving the arm.
+The robot control services are implemented in the main node. They can however be easily separated into standalone units that can be reused in other projects that require driving the arm.
 
 \subsection{Jacobian-driven motion}
 \label{subsec:impl_drv_jacob}
@@ -80,7 +80,7 @@ The complete algorithm is presented in pseudocode as Algorithm~\ref{alg:jacob}.
     \State \(\dvec q \gets \)computeJointVelocity(\(\vec p, \vec v_t\))
     \vspace{1em}
 
-    \While{checkVelocityLimit(\(\dvec q\)) fails or at maxiumim 4 times}
+    \While{checkVelocityLimit(\(\dvec q\)) fails or at maximum 4 times}
       \State \(\vec v_t \gets \frac{1}{2} \vec v_t\)
       \State \(\dot{\vec q} \gets \)computeJointVelocity(\(\vec p, \vec v_t\))
     \EndWhile
@@ -112,7 +112,7 @@ The complete algorithm is presented in pseudocode as Algorithm~\ref{alg:jacob}.
 
 The motion is controlled in a control loop running at 50\,Hz. In each iteration, we first compute the twist we need to apply. It consists of a constant input velocity the robot is requested to follow, and a correction term determined by a P regulator that corrects arm deviations from the desired trajectory. Then, MoveIt computes the joint velocities that will result in the computed twist in current arm configuration. The joint velocity checks stated above are then applied, including the eventual update of the twist and joint velocity re-computation.
 
-When the output joint velocities are known, the robot motion with those velocities until the next iteration is simulated. The state expected to be reached by next control loop iteration is checked for collisions, both self- and with the environment. If a collision would occur, the motion is stopped immediately.
+When the output joint velocities are known, the robot motion with those velocities until the next iteration is simulated. The state expected to be reached by next control loop iteration is checked for collisions, both self- and with the environment. If a collision were to occur, the motion is stopped immediately.
 
 When the final joint velocities are computed and verified, they are published to the robot driver topic controlling joint velocities. The same velocities are published twice to match the control loop frequencies (see Section \ref{subsec:api_cart_vel}).
 
@@ -125,7 +125,7 @@ The motion is initiated by a calling service \code{/exploration_move}, which is 
 
 The planned motion control is implemented using the user-friendly interface of MoveIt, the \code{MoveGroupInterface}. The motion is started by calling service \code{/set_exploration_pose}. The request is, as with Jacobian control, an \code{ExplorePointRequest} with \m x, \m y and \m z fields. Here, the fields specify the point in the grid that is to be explored by planning a path that reaches it. The output is the same as in Jacobian control.
 
-When the request is received, the target pose is specified to MoveIt, collisions of the sick and the target cell's cube are allowed and a motion plan is computed. We use the LBKPIECE motion planner provided in MoveIt. If the planning is unsuccessful, it is retried at most two times (plans may fail to be found in close proximity to obstacles for example). If no solution is found then, an unreachable cell is reported to the exploration algorithm by returning \code{reached} as false.
+When the request is received, the target pose is specified to MoveIt, collisions of the stick and the target cell's cube are allowed and a motion plan is computed. We use the LBKPIECE motion planner provided in MoveIt. If the planning is unsuccessful, it is retried at most two times (plans may fail to be found in close proximity to obstacles for example). If no solution is found then, an unreachable cell is reported to the exploration algorithm by returning \code{reached} as false.
 
 Once the plan is computed, movement is initiated through the \code{MoveGroupInterface} and the node waits for its completion. If the execution was successful, the exploration can proceed and a free cell is reported. If an obstacle was detected during the motion (see Section~\ref{subsec:impl_stop}), the fact is propagated to the caller and the movement stops immediately.
 
@@ -136,9 +136,9 @@ Once the plan is computed, movement is initiated through the \code{MoveGroupInte
 
 The algorithms we use employ both transitions to a neighboring cell and long moves to distant cells. To implement short transitions, we use the Jacobian control in conjunction with the planning as fallback.
 
-We first try to complete the movement by Jacobian control. If the movement fails, either because it encountered a singular configuration of the arm, because the arm would collide with an obstacle or because joint limits, both angular and velocity) would be violated, the algorithm returns back and tries to reach that cell again by planning the motion, possibly several times. Note that on contact detection by the instrument the movement is stopped as well, but it is a success.
+We first try to complete the movement by Jacobian control. If the movement fails, either because it encountered a singular configuration of the arm, because the arm would collide with an obstacle or because joint limits, both angular and velocity, would be violated, the algorithm returns back and tries to reach that cell again by planning the motion, possibly several times. Note that on contact detection by the instrument the movement is stopped as well, but it is a success.
 
-When exploring the cells in the lower part of the arm workspace, it is beneficial to orient the sensing tool downward. The reasons are twofold: one, the wrist rotation with respect to the 3rd arm link is limited, and pointing the instrument forward could be infeasible, and two, the instrument can then sense the ground below the robot without crashing into it first. The orientation change cannot be handled by the Jacobian controller because such control was not implemented. We instead plan the motion, also using the plan that reaches an exact location to correct any errors that would have accumulated during driving the arm by the Jacobian controller.
+When exploring the cells in the lower part of the arm workspace, it is beneficial to point the sensing tool downward. The reasons are twofold: one, the wrist rotation with respect to the third arm link is limited, and pointing the instrument forward could be infeasible, and two, the instrument can then sense the ground below the robot without crashing into it first. The orientation change cannot be handled by the Jacobian controller because such control was not implemented. We instead plan the motion, also using the plan that reaches an exact location to correct any errors that would have accumulated during driving the arm by the Jacobian controller.
 
 \subsection{Stopping the movement}
 \label{subsec:impl_stop}
@@ -147,7 +147,7 @@ The main node is subscribed to the force readings published by the Optoforce sen
 
 The force readings are checked against the thresholds of 2\,N for lateral and 4\,N for axial forces. If the thresholds are exceeded, the node enters stop state and all motion is stopped. If there is a plan execution currently in progress, it is stopped via the \code{MoveGroupInterface}. The Jacobian-controlled movement is stopped in the control loop if the node is in stop state.
 
-If the motion was planned, the arm traces its steps back by following the motion plan backwards until the tool leaves the newly classified obstacle. Then, the exploration algorithm can determine the next cell to be explored and request a planned motion to it (Cartesian control cannot be used, as we are not in a grid cell when we have left the obstacle).
+If the motion was planned, the arm traces its steps back by following the motion plan backwards until the tool leaves the newly classified obstacle. Then, the exploration algorithm can determine the next cell to be explored and request a planned motion to it (Cartesian control cannot be used, as we are not in a grid cell when we left the obstacle).
 
 When the motion is stopped during Jacobian controlled motion, the robot then reverses the motion and returns back where it came from. As the robot was there previously, the movement is necessarily safe. Nonetheless, all the collisions are still checked.
 
@@ -157,32 +157,32 @@ Once the contact between the tool and the obstacle ceases and the forces drop be
 \section{Exploration algorithm}
 \label{sec:alg_impl}
 
-We implemented both the CPP algorithms we mentioned as feasible in Section~\ref{sec:cpp_comp}, the compact space heuristic and the neural-network (NN) algorithm. Only the heuristic algorithm is adapter to drive the arm; the neural-network algorithm did not show promising results in the simulated test \ref{sec:exp_sim_coverage}. The algorithms are implemented in python and are at the moment run as commands by the user. They can easily be transformed into actions or services that are called by other components of the system.
+We implemented both the CPP algorithms we mentioned as feasible in Section~\ref{sec:cpp_comp}, the compact space heuristic and the neural-network (NN) algorithm. Only the heuristic algorithm is adapted to drive the arm; the neural-network algorithm did not show promising results in the simulated test \ref{sec:exp_sim_coverage}. The algorithms are implemented in python and are at the moment run as commands by the user. They can easily be transformed into actions or services that are called by other components of the system.
 
 Both the algorithms share the same basic structure. The map is represented in a 3D integer array. The arm workspace is specified to the algorithms by marking the unreachable fields as obstacles before the algorithm starts. All other cells are set to the base value of 0. The environment is searched layer by layer; in the \m y direction in our case.
 
 \subsection{Heuristic algorithm}
 \label{subsec:impl_heur}
 
-In each layer, the heuristic algorithm explores all the cells sequentially. The current cell is marked in the map as empty, as obstacle or as unreachable based on the outcome of the effort to reach the cell. The information about the current cell is propagated to the neighboring cells, adding 1 if the current cell is empty and 2 if it is an obstacle. This way, each yet unexplored map cell holds the value of the heuristic function defined in Equation~\ref{eq:heuristic}. Then, the next cell is found by simply choosing the neighbor with the highest heuristic value and breaking the eventual ties as defined in \ref{sec:my_heuristic}.
+In each layer, the heuristic algorithm explores all the cells sequentially. The current cell is marked in the map as empty, as obstacle or as unreachable based on the outcome of the effort to reach the cell. The information about the current cell is propagated to the neighboring cells, adding 1 if the current cell is empty and 2 if it is an obstacle. This way, each so far unexplored map cell holds the value of the heuristic function defined in Equation~\ref{eq:heuristic}. Then, the next cell is found by simply choosing the neighbor with the highest heuristic value and breaking the eventual ties as defined in \ref{sec:my_heuristic}.
 
-If no neighboring cell is unexplored, the nearest such cell is found and set as the next exploration target. If no such cell exists, the robot moves the the nearest free cell in the following layer.
+If no neighboring cell is unexplored, the nearest such cell is found and set as the next exploration target. If no such cell exists, the robot moves to the nearest free cell in the following layer.
 
 \subsection{Neural-network-inspired algorithm}
 \label{subsec:impl_neuro}
 
 The NN needs, beside the map, another two arrays that represents the activity of the neurons in the network and their external inputs. Only one map layer needs to be simulated at a time, so 2D arrays are in order. The activity array is initialized to zeros, while the external inputs are initialized to the corresponding map layer. The parameters of the method are set according to the original article \cite{neural}: \(A=50, B=2, D=1, E=100\).
 
-We made a few changes to the algorithm. First, we do not take direction changes of the robot into account as does the original algorithm. The article fails to specify the weight with which the turning angle is to be added to the activity anyway. Second, when all the neighboring cells are either already explored or obstacles, we move the robot to the closest unexplored cell as in our heuristic algorithm. The original is meant to be used with whole robots in planar environment, and as such could not move the robots around at will as we can the robotic arm.
+We made a few changes to the algorithm. First, we do not take direction changes of the robot into account as does the original algorithm. The article fails to specify the weight with which the turning angle is to be added to the activity anyway. Second, when all the neighboring cells are either already explored or obstacles, we move the robot to the closest unexplored cell as in our heuristic algorithm. The original is meant to be used with whole robots in planar environment, and as such could not move the robots around at will as we can do with the robotic arm.
 
 The neural network is modeled by differential Equation \ref{eqn:shunting}. As we decide to move the robot based on the activity, we need to model the behavior of the network in time to simulate the activity propagation and compute the appropriate values for neuron activity. We simulate the activity function by the Runge-Kutta 4th order method, which has a great ratio between performance (high precision) and implementation complexity (low).
 
-We simulate the network in 0.05\,s steps. In the beginning of each layer, we run the simulation for 100 steps to let the activities stabilize. Then in each step, the robot chooses the neighboring cell with highest activity. If all neighbours are have lower activity than the current cell, and are thus already explored or obstacles, we move the robot to the nearest unexplored cell. If there is no such cell left in this layer, the robot moves to the following layer.
+We simulate the network in 0.05\,s steps. In the beginning of each layer, we run the simulation for 100 steps to let the activities stabilize. Then in each step, the robot chooses the neighboring cell with highest activity. If all neighbours have lower activity than the current cell, and are thus already explored or obstacles, we move the robot to the nearest unexplored cell. If there is no such cell left in this layer, the robot moves to the following layer.
 
 \section{Integration with the Absolem robotic platform}
 \label{sec:integr}
 
-The software implemented in this thesis is designed to be integrated into the TRADR project, to use the arm when mounted on the mobile robot platform and explore space as needed by the whole robot's goal. The main concern with the integration is obstacle avoidance for the arm, wchich needs to take the platform itself into account. That should not pose a problem, as complete collsion checking is performed even now, and it is only a matter of adding the platform collision model into the environment.
+The software implemented in this thesis is designed to be integrated into the TRADR project, to use the arm when mounted on the mobile robot platform and explore space as needed by the whole robot's goal. The main concern with the integration is obstacle avoidance for the arm, which needs to take the platform itself into account. That should not pose a problem, as complete collision checking is performed even now, and it is only a matter of adding the platform collision model into the environment.
 
 The second matter is the interface via which the whole exploration will be invoked. This will need to be agreed upon by the designers of the components that are to be the initiators of the exploration, including the map format to be returned; if it is to be a point cloud, a representation of the grid or something completely different. 
 

@@ -8,7 +8,7 @@
 
 
 \ctusetup{
-	preprint = \ctuverlog,
+	%preprint = \ctuverlog,
 	mainlanguage = english,
 	otherlanguages = {czech},
 	title-czech = {Taktilní průzkum terénu robotickou rukou},
@@ -19,16 +19,15 @@
 	faculty = F3,
 	department-czech = {Katedra kybernetiky},
 	department-english = {Department of Cybernetics},
-	author = {Martin Burian},
-	supervisor = {doc. Tomáš Svoboda, Ph.D.},
+	author = {Martin Burian},	supervisor = {doc. Tomáš Svoboda, Ph.D.},
 	supervisor-address = {},
 	supervisor-specialist = {},
 	fieldofstudy-english = {Open informatics},
 	subfieldofstudy-english = {Computer vision and digital image},
 	fieldofstudy-czech = {Otevřená informatika},
 	subfieldofstudy-czech = {Počítačové vidění a digitální obraz},
-	keywords-czech = {slovo, klíč},
-	keywords-english = {word, key},
+	keywords-czech = {mapování, robotická ruka, plánování pokrývajících cest, taktilní vnímání},
+	keywords-english = {mapping, robotic arm, coverage path planning, tactile sensing},
 	day = 9,
 	month = 1,
 	year = 2017,
@@ -81,32 +80,28 @@
 
 % Abstract in Czech
 \begin{abstract-czech}
-Tys honí až nevrlí komise omylem kontor město sbírku a koutě, pán nu lež, slzy, nemají zasvé šťasten. Tetě veselá. Vem lépe ty jí cíp vrhá. Novinám prachy kabát. Býti čaj via pakujte přeli, dyť do chuť kroutí kolínský bába odkrouhnul. Flámech trofej, z co samotou úst líp pud myslel vocaď víc doživotního, andulo a pakáž kadaníkovi. Čímž protiva v žába vězí duní.
-
-Jé ní ticho vzoru. Lepší zburcují učil nepořádku zboží ní mučedník obdivem! Bas nemožné postele bys cítíte ať února. Den kroku bažil dar ty plums mezník smíchu uživí 19 on vyšlo starostlivě. Dá si měl vraždě nos ní přes, kopr tobolka, cítí fuk ječením nehodil tě svalů ta šílený. Uf teď jaké 19 divným.
+Při záchranných misích mohou senzory robotu Absolem používaného v projektu TRADR selhat díky nepříznivým podmínkám prostředí, jako například kouř nebo prach. Bez senzorických dat je další pohyb robotu obtížný a nebezpečný. Robotická ruka, kterou je robot vybaven, může být v takovýchto situacích použita pro získání informací o prostředí snímáním taktilních měření. Navrhli jsme algoritmus, který při exploraci ruku navádí, spolu s metodami pro řízení ruky a snímání měření z bezpečné vzdálenosti. Systém jsme implementovali a otestovali jak v simulovaném, tak v reálném prostředí.
 \end{abstract-czech}
 
 
 
 % Abstract in English
 \begin{abstract-english}
- Let us suppose we are given a modulus $d$.  In , the main result was the extension of Newton random variables.  We show that ${\Gamma_{\mathfrak{{r}},b}} ( {Z_{\beta,f}} ) \sim \bar{E}$.  The work in  did not consider the infinite, hyper-reversible, local case. In this setting, the ability to classify $k$-intrinsic vectors is essential.
- 
-Let us suppose $\mathfrak{{a}} > \mathfrak{{c}}''$.  Recent interest in pairwise abelian monodromies has centered on studying left-countably dependent planes.  We show that $\Delta \ge 0$.  It was Brouwer who first asked whether classes can be described. B.  improved upon the results of M. Bernoulli by deriving nonnegative classes.
+In search and rescue missions, the sensors on the Absolem mobile robot used in the TRADR project can fail due to environmental conditions like smoke and dust, making further robot operation difficult and dangerous for the robot. In such cases, the robot-mounted robotic arm can be used to gain information about the environment by obtaining tactile measurements from it. We propose an algorithm to guide the arm during the exploration, along with methods to control the arm movement and to gather the measurements with a 3D force sensor from safe distance. The system is implemented and put to the test in both simulated experiments and real world trials.
 \end{abstract-english}
 
 
 
 % Acknowledgements / Podekovani
 \begin{thanks}
-Děkuji ČVUT, že mi je tak dobrou \emph{alma mater}.
+I would like to thank my supervisor Tomáš Svoboda for his infinite patience, and to my partner Zuzana who helped me survive the creation of this thesis.
 \end{thanks}
 
 
 
 % Declaration / Prohlaseni
 \begin{declaration}
-I declare that the presented work was developed independently and that I have listed all sources of information used within in in accordance with the methodical instructions for observibg principles in preparation of university theses.
+I declare that the presented work was developed independently and that I have listed all sources of information used within in accordance with the methodical instructions for observing principles in preparation of university theses.
 
 Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 
@@ -114,7 +109,7 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 \end{declaration}
 
 % Only for testing purposes
-\usepackage[pagewise]{lineno}
+%\usepackage[pagewise]{lineno}
 
 %\usepackage{graphicx}
 \graphicspath{{./}{./figures/}}
@@ -179,7 +174,7 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 
 \maketitle
 
-\listoftodos
+%\listoftodos
 
 
 \subfile{ch_intro}
@@ -206,6 +201,13 @@ Prague, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 
 \bibliographystyle{unsrt}
 \bibliography{buriama8_dp}
+
+\chapter{CD contents}
+
+The CD contains all the source codes we created in directory \code{src}.
+
+A digital copy of this thesis is in the root of the CD as \code{buriama8_dp.pdf}
+
 
 
 \end{document}
