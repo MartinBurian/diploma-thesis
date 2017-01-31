@@ -1,0 +1,388 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\title{Environment mapping using radar}
+\author{Martin Burian}
+\date{\today}
+\usetheme{Frankfurt}
+\usecolortheme{crane}
+\usepackage{graphicx}
+\usepackage{mdwlist}
+\usepackage{listings}
+\usepackage{comment}
+
+\graphicspath{{.}{../images/}}
+
+\newcommand\mytextbullet{\leavevmode\usebeamertemplate{itemize item}}
+\newcommand*{\ve}[1]{\mathbf{#1}}
+\renewcommand\mathfamilydefault{\rmdefault}
+\newcommand*{\half}{\frac{1}{2}}
+\newcommand*{\uvz}[1]{``#1''}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\section{Sensor and properties}
+\subsection{test}
+
+\begin{frame}
+	\frametitle{IGEP Lambda radar}
+	
+	\begin{columns}[T]
+	\begin{column}{0.49\textwidth}
+	
+	\begin{figure}[htp]
+  \centering
+  \includegraphics[width=4cm]{sensor}
+  \end{figure}
+  \end{column}
+  
+	\begin{column}{0.49\textwidth}
+	\begin{itemize}
+	\item 24GHz ISM band \emph{Orion} radar sensor
+	   \begin{itemize}
+	      \item FMCW radar
+	      \item fully programmable DDS
+	      \item 12bit 500--1000\,ksps ADC
+	      \item SPI interface
+     \end{itemize}
+     
+  \item \emph{IGEPv2} embedded computer
+    \begin{itemize}
+	    \item ARM processor
+	    \item NEON SIMD instructions
+	    \item dedicated DSP
+    \end{itemize}
+  \end{itemize}
+  \end{column}
+  
+  \end{columns}
+
+\end{frame}
+
+
+\begin{comment}
+	\frametitle{FMCW principle}
+	
+	\begin{columns}
+	\begin{column}{0.49\textwidth}
+	\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\linewidth]{fm_img}
+    \pause
+    
+    \includegraphics[width=\linewidth]{if_img}
+    \end{figure}
+ 	\end{column}
+  
+	\begin{column}{0.49\textwidth}
+	  \begin{figure}[htp]
+    \centering
+    \pause
+    \includegraphics[width=1.00\textwidth]{range_domain_x1}
+    \end{figure}
+
+ 	\end{column}
+  \end{columns}
+\end{comment}
+
+\begin{frame}
+	\frametitle{Sensor properties}
+	
+	\begin{itemize}
+	\item radiation characteristic -- what part of the environment is scanned?
+	\item material interaction with radio waves -- how do different materials register?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Radiation characteristic}
+	\begin{figure}[htp]
+  \centering
+  \includegraphics[width=5.1cm]{trans_horiz}
+  \quad
+  \includegraphics[width=5cm]{trans_vert}
+\end{figure}
+\end{frame}
+
+
+
+\begin{comment}[t]
+	\frametitle{Material reflectivity and transmittance}
+	\begin{columns}[T]
+	\begin{column}[t]{0.35\textwidth}
+	  \includegraphics<2->[width=4cm]{../images/materials/NOTHING_ann}
+	  
+	  \includegraphics<3->[width=4cm]{../images/materials/GLASS_1mm_ann}
+	  
+	  \includegraphics<4->[width=4cm]{../images/materials/AL_1mm_ann}
+	  
+ 	 \end{column}
+  
+	\begin{column}[c]{0.65\textwidth}
+	  \includegraphics<1-1>[width=7cm]{../images/materials/NOTHING_ann}
+	  \includegraphics<2-2>[width=7cm]{../images/materials/GLASS_1mm_ann}
+	  \includegraphics<3-3>[width=7cm]{../images/materials/AL_1mm_ann}
+	  \includegraphics<4-4>[width=7cm]{../images/materials/YTONG_10cm_ann}
+ 	 \end{column}
+  \end{columns}
+\end{comment}
+
+
+
+\begin{frame}
+	\frametitle{Material specularity}
+	\begin{center}
+	\includegraphics[width=5cm]{spec_cihla_ann}
+	\quad
+	\includegraphics[width=5cm]{spec_ytong_ann}
+	\\[1cm]
+	\includegraphics[width=5cm]{spec_glass_ann}
+  \end{center}
+	\hspace{-8mm}\tiny{(reflection intensity is in dB relative to maximum registered intensity)}
+\end{frame}
+
+
+\section{Mapping algorithm}
+\subsection{test}
+
+\begin{frame}
+	\frametitle{Mapping algorithm}
+	\begin{columns}[T]
+	\begin{column}{0.49\textwidth}
+	  \begin{itemize}
+	    \item occupancy grid algorithm
+	    \item Bayes filter
+	    \item compensates the directivity issues:
+	        \begin{itemize}
+	          \item normal estimation
+	          \item confidence limiting
+          \end{itemize}
+    \end{itemize}
+ 	\end{column}
+  
+	\begin{column}{0.49\textwidth}
+	  \begin{figure}[htp]
+    \centering
+    \includegraphics[width=1.00\textwidth]{bayes_patro_native}
+    \end{figure}
+
+ 	\end{column}
+  \end{columns}
+	
+\end{frame}
+
+
+\section{Experiments}
+\subsection{test}
+
+\begin{frame}
+	\frametitle{Experiments}
+	
+	\begin{columns}[T]
+	\begin{column}{0.65\textwidth}
+	  \begin{itemize}
+	  \item indoor tests
+	    \begin{itemize}
+	    \item stationary
+	    \item \uvz{sweeping}
+    \end{itemize}
+    \item outdoor tests
+    \end{itemize}
+ 	 \end{column}
+  
+	\begin{column}{0.35\textwidth}
+	  \includegraphics[width=4cm]{robot}
+ 	 \end{column}
+  \end{columns}
+  
+\end{frame}
+
+\begin{frame}
+    \frametitle{The atrium}
+    
+    \centering
+    \includegraphics[width=5cm]{bayes_nosweep}
+    \quad
+    \includegraphics[width=5cm]{bayes_sweep}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Building E first floor}
+    
+    \centering
+    \includegraphics[height=4.1cm]{bayes_patro}
+    \quad
+    \includegraphics[height=4.1cm]{env_patro}
+\end{frame}
+
+
+\section{Conclusions}
+\subsection{test}
+
+\begin{frame}
+	\frametitle{Conclusions -- sensor}
+	\begin{center}
+	the sensor is fit for usage in mobile robotics:\\[5mm]
+  
+  \begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+	  \begin{itemize}
+	    \item[+] robust to environment\\(fog, dust)
+	    \item[+] can penetrate obstacles
+	    \item[+] satisfactory measurement precision (std. error 19\,cm)
+    \end{itemize}
+ 	\end{column}
+  
+	\begin{column}{0.5\textwidth}
+	   \begin{itemize}
+	    \item[--] wide beam \(\approx 26^\circ\)
+	    \item[--] only specular reflections
+	    \vspace{5mm}
+	    \item[--] \underline{false reflections}
+    \end{itemize}
+ 	 \end{column}
+  \end{columns}
+  
+  \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conclusions -- mapping algorithm}
+    
+    \begin{itemize}
+	    \item builds believable maps
+	    \item copes with the directional nature of the sensor
+    \end{itemize}
+\end{frame}
+
+\begin{comment}
+    \frametitle{Future work}
+    
+    \begin{itemize}
+	    \item implement SAR techniques
+	    \item explore different map representations
+	    \item[(\mytextbullet] implement SLAM algorithm)
+    \end{itemize}
+\end{comment}
+
+\section*{}
+\begin{frame}	
+	\begin{center}
+	%\vspace{4cm}
+	\Huge{Thank you for your attention}
+\end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Confidence limiting and normal estimation}
+    
+    \centering
+    \includegraphics[width=3.3cm]{gen_nolimit}
+    \quad
+    \includegraphics[width=3.3cm]{gen_normal}
+    \quad
+    \includegraphics[width=3.3cm]{gen_nonormal}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Mapping algorithm}
+	\begin{itemize}
+	  \item read M: \((x, y, \theta)\), \(\ve r\), \(\ve a\)
+	  \item subtract local mean: \(a'_i=a_i-\frac{1}{M} \sum_{j=i-M/2}^{i+M/2} a_j\)
+	  \item threshold \(a'_i\): \(r_i\) is occupied or free\\
+	        \(\rightarrow\) calculate sensor model \(p(M|O(r)), p(M|F(r))\)
+	  \item[(\mytextbullet] linear interpolation)
+	  \item for each cell \(c\) at each range \(r_i\):
+	  \begin{itemize}
+	    \item update normal estimate, \(\phi\) = deviation from estimated normal
+	    \item \(upd(c)=\frac{p(M|O(c))}{p(M|O(c))p(O(c))+p(M|F(c))(1-p(O(c))}\)
+	    \item \(w=|\cos(\phi)|^{10} \left ( \frac{r_\textnormal{max}-r_i}{r_\textnormal{max}} \frac{r_\textnormal{falloff}-1}{r_\textnormal{falloff}} + \frac{1}{r_\textnormal{falloff}} \right )\)
+	    \item \(p(O(c)|M)=p(O) upd(C)^w\)
+	    \item update and apply confidence limit
+    \end{itemize}
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sensor model}
+    
+    \begin{align*}
+      p(M|O(r_t))=&
+	    \begin{cases}
+	      \half+0.3 \frac{N-n}{N} &\mbox{if } a_t'>T\\
+	      \half-0.1 \frac{N-n}{N} &\mbox{if } a_t'<T
+      \end{cases}\\
+      p(M|F(r_t))=&
+	    \begin{cases}
+	      \half-0.15 \frac{N-n}{N} &\mbox{if } a_t'>T\\
+	      \half+0.05 \frac{N-n}{N} &\mbox{if } a_t'<T
+      \end{cases}
+    \end{align*}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{The school yard}
+    
+    \centering
+    \includegraphics[height=5cm]{bayes_dvur}
+    \quad
+    \includegraphics[height=5cm]{env_dvur}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{The entrance hall}
+    
+    \centering
+    \includegraphics[height=5cm]{bayes_vchod}
+    \quad
+    \includegraphics[height=5cm]{env_vchod}
+\end{frame}
+
+\begin{frame}[t]
+	\frametitle{Material reflectivity transmittance}
+	\begin{columns}[T]
+	\begin{column}[t]{0.5\textwidth}
+	  \includegraphics[width=5cm]{../images/materials/NOTHING_ann}
+	  
+	  \includegraphics[width=5cm]{../images/materials/GLASS_1mm_ann}
+	  
+	  
+ 	 \end{column}
+  
+	\begin{column}[c]{0.5\textwidth}
+	  \includegraphics[width=5cm]{../images/materials/AL_1mm_ann}
+	  
+	  \includegraphics[width=5cm]{../images/materials/YTONG_10cm_ann}
+ 	 \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[c]
+	\frametitle{Measurement precision}
+	\begin{columns}[c]
+	\begin{column}{0.49\textwidth}
+    \centering
+    \includegraphics[width=6.2cm]{error_hist}
+ 	 \end{column}
+	\begin{column}{0.49\textwidth}
+	\begin{figure}[htp]
+    \centering
+    mean error +0.03\,m
+    
+    std. deviation 0.19\,m
+    \end{figure}
+    
+ 	 \end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}
